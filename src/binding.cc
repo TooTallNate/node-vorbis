@@ -27,33 +27,24 @@ using namespace node;
 
 namespace nodevorbis {
 
+/* TODO: async */
 Handle<Value> node_vorbis_synthesis_headerin (const Arguments& args) {
   HandleScope scope;
-  int i = vorbis_synthesis_headerin(NULL, NULL, NULL);
-  oggpack_writeinit(NULL);
-  return scope.Close(Undefined());
+  vorbis_info *vi = UnwrapPointer<vorbis_info *>(args[0]);
+  vorbis_comment *vc = UnwrapPointer<vorbis_comment *>(args[1]);
+  ogg_packet *op = UnwrapPointer<ogg_packet *>(args[2]);
+  int i = vorbis_synthesis_headerin(vi, vc, op);
+  return scope.Close(Integer::New(i));
 }
 
 void Initialize(Handle<Object> target) {
   HandleScope scope;
 
-  NODE_SET_METHOD(target, "vorbis_systhesis_headerin", node_vorbis_synthesis_headerin);
-  /*
-  target->Set(String::NewSymbol("sizeof_ogg_sync_state"), Integer::New(sizeof(ogg_sync_state)));
-  target->Set(String::NewSymbol("sizeof_ogg_stream_state"), Integer::New(sizeof(ogg_stream_state)));
-  target->Set(String::NewSymbol("sizeof_ogg_page"), Integer::New(sizeof(ogg_page)));
-  target->Set(String::NewSymbol("sizeof_ogg_packet"), Integer::New(sizeof(ogg_packet)));
+  /* sizeof's */
+  target->Set(String::NewSymbol("sizeof_vorbis_info"), Integer::New(sizeof(vorbis_info)));
+  target->Set(String::NewSymbol("sizeof_vorbis_comment"), Integer::New(sizeof(vorbis_comment)));
 
-  NODE_SET_METHOD(target, "ogg_sync_write", node_ogg_sync_write);
-  NODE_SET_METHOD(target, "ogg_sync_pageout", node_ogg_sync_pageout);
-
-  NODE_SET_METHOD(target, "ogg_stream_init", node_ogg_stream_init);
-  NODE_SET_METHOD(target, "ogg_stream_pagein", node_ogg_stream_pagein);
-  NODE_SET_METHOD(target, "ogg_stream_packetout", node_ogg_stream_packetout);
-
-  NODE_SET_METHOD(target, "ogg_packet_packetno", node_ogg_packet_packetno);
-  NODE_SET_METHOD(target, "ogg_packet_bytes", node_ogg_packet_bytes);
-  */
+  NODE_SET_METHOD(target, "vorbis_synthesis_headerin", node_vorbis_synthesis_headerin);
 }
 
 } // nodevorbis namespace
