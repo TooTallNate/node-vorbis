@@ -4,7 +4,7 @@
 # directly to that .node module.
 {
   'variables': {
-    'node_ogg': '<!(node find-ogg.js <(module_root_dir))',
+    'node_ogg': '<!(node -p -e "require(\'path\').dirname(require.resolve(\'ogg\'))")',
     'ogg_include_dirs': [
       '<(node_ogg)/deps/libogg/include',
       '<(node_ogg)/deps/libogg/config/<(OS)/<(target_arch)',
