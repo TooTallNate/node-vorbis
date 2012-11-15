@@ -18,6 +18,7 @@
 #include <node.h>
 #include <string.h>
 
+#include "node_buffer.h"
 #include "node_pointer.h"
 #include "ogg/ogg.h"
 #include "vorbis/codec.h"
@@ -92,6 +93,60 @@ Handle<Value> node_vorbis_synthesis_headerin (const Arguments& args) {
   return scope.Close(Integer::New(i));
 }
 
+/* TODO: async */
+Handle<Value> node_vorbis_synthesis (const Arguments& args) {
+  HandleScope scope;
+  vorbis_block *vb = UnwrapPointer<vorbis_block *>(args[0]);
+  ogg_packet *op = UnwrapPointer<ogg_packet *>(args[1]);
+
+  int i = vorbis_synthesis(vb, op);
+  return scope.Close(Integer::New(i));
+}
+
+/* TODO: async */
+Handle<Value> node_vorbis_synthesis_blockin (const Arguments& args) {
+  HandleScope scope;
+  vorbis_dsp_state *vd = UnwrapPointer<vorbis_dsp_state *>(args[0]);
+  vorbis_block *vb = UnwrapPointer<vorbis_block *>(args[1]);
+
+  int i = vorbis_synthesis_blockin(vd, vb);
+  return scope.Close(Integer::New(i));
+}
+
+/* TODO: async */
+Handle<Value> node_vorbis_synthesis_pcmout (const Arguments& args) {
+  HandleScope scope;
+  float **pcm;
+  int samples;
+  Handle<Value> rtn;
+  vorbis_dsp_state *vd = UnwrapPointer<vorbis_dsp_state *>(args[0]);
+  int channels = args[1]->Int32Value();
+
+  samples = vorbis_synthesis_pcmout(vd, &pcm);
+
+  if (samples > 0) {
+    // we need to interlace the pcm float data...
+    Buffer *buffer = Buffer::New(samples * channels * sizeof(float));
+    float *buf = reinterpret_cast<float *>(Buffer::Data(buffer));
+    int i, j;
+    for (i = 0; i < channels; i++) {
+      float *ptr = buf + i;
+      float *mono = pcm[i];
+      for (j = 0; j < samples; j++) {
+        *ptr = mono[j];
+        //fprintf(stderr, "%d, %d: %f\n", i, j, *ptr);
+        ptr += channels;
+      }
+    }
+    vorbis_synthesis_read(vd, samples);
+    rtn = buffer->handle_;
+  } else {
+    rtn = Integer::New(samples);
+  }
+
+  return scope.Close(rtn);
+}
+
 void Initialize(Handle<Object> target) {
   HandleScope scope;
 
@@ -130,6 +185,9 @@ void Initialize(Handle<Object> target) {
   NODE_SET_METHOD(target, "vorbis_synthesis_init", node_vorbis_synthesis_init);
   NODE_SET_METHOD(target, "vorbis_block_init", node_vorbis_block_init);
   NODE_SET_METHOD(target, "vorbis_synthesis_headerin", node_vorbis_synthesis_headerin);
+  NODE_SET_METHOD(target, "vorbis_synthesis", node_vorbis_synthesis);
+  NODE_SET_METHOD(target, "vorbis_synthesis_blockin", node_vorbis_synthesis_blockin);
+  NODE_SET_METHOD(target, "vorbis_synthesis_pcmout", node_vorbis_synthesis_pcmout);
   NODE_SET_METHOD(target, "comment_array", node_comment_array);
   NODE_SET_METHOD(target, "get_format", node_get_format);
 
