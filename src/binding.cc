@@ -49,14 +49,8 @@ Handle<Value> node_comment_array (const Arguments& args) {
   for (i = 0; i < vc->comments; i++) {
     array->Set(i, String::New(vc->user_comments[i], vc->comment_lengths[i]));
   }
+  array->Set(String::NewSymbol("vendor"), String::New(vc->vendor));
   return scope.Close(array);
-}
-
-Handle<Value> node_comment_vendor (const Arguments& args) {
-  HandleScope scope;
-  vorbis_comment *vc = UnwrapPointer<vorbis_comment *>(args[0]);
-  Local<String> vendor = String::New(vc->vendor);
-  return scope.Close(vendor);
 }
 
 Handle<Value> node_get_format (const Arguments& args) {
@@ -116,7 +110,6 @@ void Initialize(Handle<Object> target) {
   NODE_SET_METHOD(target, "vorbis_comment_init", node_vorbis_comment_init);
   NODE_SET_METHOD(target, "vorbis_synthesis_headerin", node_vorbis_synthesis_headerin);
   NODE_SET_METHOD(target, "comment_array", node_comment_array);
-  NODE_SET_METHOD(target, "comment_vendor", node_comment_vendor);
   NODE_SET_METHOD(target, "get_format", node_get_format);
 
   target->Set(String::NewSymbol("version"), String::New(vorbis_version_string()),
