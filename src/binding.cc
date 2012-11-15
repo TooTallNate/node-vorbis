@@ -27,6 +27,20 @@ using namespace node;
 
 namespace nodevorbis {
 
+Handle<Value> node_vorbis_info_init (const Arguments& args) {
+  HandleScope scope;
+  vorbis_info *vi = UnwrapPointer<vorbis_info *>(args[0]);
+  vorbis_info_init(vi);
+  return Undefined();
+}
+
+Handle<Value> node_vorbis_comment_init (const Arguments& args) {
+  HandleScope scope;
+  vorbis_comment *vc = UnwrapPointer<vorbis_comment *>(args[0]);
+  vorbis_comment_init(vc);
+  return Undefined();
+}
+
 /* TODO: async */
 Handle<Value> node_vorbis_synthesis_headerin (const Arguments& args) {
   HandleScope scope;
@@ -70,7 +84,13 @@ void Initialize(Handle<Object> target) {
   CONST(OV_EBADLINK);
   CONST(OV_ENOSEEK);
 
+  /* functions */
+  NODE_SET_METHOD(target, "vorbis_info_init", node_vorbis_info_init);
+  NODE_SET_METHOD(target, "vorbis_comment_init", node_vorbis_comment_init);
   NODE_SET_METHOD(target, "vorbis_synthesis_headerin", node_vorbis_synthesis_headerin);
+
+  target->Set(String::NewSymbol("version"), String::New(vorbis_version_string()),
+    static_cast<PropertyAttribute>(ReadOnly|DontDelete));
 }
 
 } // nodevorbis namespace
