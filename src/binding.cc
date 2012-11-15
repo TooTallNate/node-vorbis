@@ -41,6 +41,22 @@ Handle<Value> node_vorbis_comment_init (const Arguments& args) {
   return Undefined();
 }
 
+Handle<Value> node_vorbis_synthesis_init (const Arguments& args) {
+  HandleScope scope;
+  vorbis_dsp_state *vd = UnwrapPointer<vorbis_dsp_state *>(args[0]);
+  vorbis_info *vi = UnwrapPointer<vorbis_info *>(args[1]);
+  int r = vorbis_synthesis_init(vd, vi);
+  return scope.Close(Integer::New(r));
+}
+
+Handle<Value> node_vorbis_block_init (const Arguments& args) {
+  HandleScope scope;
+  vorbis_dsp_state *vd = UnwrapPointer<vorbis_dsp_state *>(args[0]);
+  vorbis_block *vb = UnwrapPointer<vorbis_block *>(args[1]);
+  int r = vorbis_block_init(vd, vb);
+  return scope.Close(Integer::New(r));
+}
+
 Handle<Value> node_comment_array (const Arguments& args) {
   HandleScope scope;
   int i;
@@ -59,6 +75,9 @@ Handle<Value> node_get_format (const Arguments& args) {
   Local<Object> format = Object::New();
   format->Set(String::NewSymbol("channels"), Integer::New(vi->channels));
   format->Set(String::NewSymbol("sampleRate"), Number::New(vi->rate));
+  format->Set(String::NewSymbol("bitDepth"), Integer::New(sizeof(float) * 8));
+  format->Set(String::NewSymbol("float"), True());
+  format->Set(String::NewSymbol("signed"), True());
   return scope.Close(format);
 }
 
@@ -108,6 +127,8 @@ void Initialize(Handle<Object> target) {
   /* functions */
   NODE_SET_METHOD(target, "vorbis_info_init", node_vorbis_info_init);
   NODE_SET_METHOD(target, "vorbis_comment_init", node_vorbis_comment_init);
+  NODE_SET_METHOD(target, "vorbis_synthesis_init", node_vorbis_synthesis_init);
+  NODE_SET_METHOD(target, "vorbis_block_init", node_vorbis_block_init);
   NODE_SET_METHOD(target, "vorbis_synthesis_headerin", node_vorbis_synthesis_headerin);
   NODE_SET_METHOD(target, "comment_array", node_comment_array);
   NODE_SET_METHOD(target, "get_format", node_get_format);
