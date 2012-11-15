@@ -59,6 +59,15 @@ Handle<Value> node_comment_vendor (const Arguments& args) {
   return scope.Close(vendor);
 }
 
+Handle<Value> node_get_format (const Arguments& args) {
+  HandleScope scope;
+  vorbis_info *vi = UnwrapPointer<vorbis_info *>(args[0]);
+  Local<Object> format = Object::New();
+  format->Set(String::NewSymbol("channels"), Integer::New(vi->channels));
+  format->Set(String::NewSymbol("sampleRate"), Number::New(vi->rate));
+  return scope.Close(format);
+}
+
 /* TODO: async */
 Handle<Value> node_vorbis_synthesis_headerin (const Arguments& args) {
   HandleScope scope;
@@ -108,6 +117,7 @@ void Initialize(Handle<Object> target) {
   NODE_SET_METHOD(target, "vorbis_synthesis_headerin", node_vorbis_synthesis_headerin);
   NODE_SET_METHOD(target, "comment_array", node_comment_array);
   NODE_SET_METHOD(target, "comment_vendor", node_comment_vendor);
+  NODE_SET_METHOD(target, "get_format", node_get_format);
 
   target->Set(String::NewSymbol("version"), String::New(vorbis_version_string()),
     static_cast<PropertyAttribute>(ReadOnly|DontDelete));
