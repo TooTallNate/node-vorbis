@@ -41,6 +41,24 @@ Handle<Value> node_vorbis_comment_init (const Arguments& args) {
   return Undefined();
 }
 
+Handle<Value> node_comment_array (const Arguments& args) {
+  HandleScope scope;
+  int i;
+  vorbis_comment *vc = UnwrapPointer<vorbis_comment *>(args[0]);
+  Local<Array> array = Array::New(vc->comments);
+  for (i = 0; i < vc->comments; i++) {
+    array->Set(i, String::New(vc->user_comments[i], vc->comment_lengths[i]));
+  }
+  return scope.Close(array);
+}
+
+Handle<Value> node_comment_vendor (const Arguments& args) {
+  HandleScope scope;
+  vorbis_comment *vc = UnwrapPointer<vorbis_comment *>(args[0]);
+  Local<String> vendor = String::New(vc->vendor);
+  return scope.Close(vendor);
+}
+
 /* TODO: async */
 Handle<Value> node_vorbis_synthesis_headerin (const Arguments& args) {
   HandleScope scope;
@@ -88,6 +106,8 @@ void Initialize(Handle<Object> target) {
   NODE_SET_METHOD(target, "vorbis_info_init", node_vorbis_info_init);
   NODE_SET_METHOD(target, "vorbis_comment_init", node_vorbis_comment_init);
   NODE_SET_METHOD(target, "vorbis_synthesis_headerin", node_vorbis_synthesis_headerin);
+  NODE_SET_METHOD(target, "comment_array", node_comment_array);
+  NODE_SET_METHOD(target, "comment_vendor", node_comment_vendor);
 
   target->Set(String::NewSymbol("version"), String::New(vorbis_version_string()),
     static_cast<PropertyAttribute>(ReadOnly|DontDelete));
