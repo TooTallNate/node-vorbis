@@ -33,6 +33,7 @@ Handle<Value> node_vorbis_synthesis_headerin (const Arguments& args) {
   vorbis_info *vi = UnwrapPointer<vorbis_info *>(args[0]);
   vorbis_comment *vc = UnwrapPointer<vorbis_comment *>(args[1]);
   ogg_packet *op = UnwrapPointer<ogg_packet *>(args[2]);
+
   int i = vorbis_synthesis_headerin(vi, vc, op);
   return scope.Close(Integer::New(i));
 }
@@ -41,8 +42,33 @@ void Initialize(Handle<Object> target) {
   HandleScope scope;
 
   /* sizeof's */
-  target->Set(String::NewSymbol("sizeof_vorbis_info"), Integer::New(sizeof(vorbis_info)));
-  target->Set(String::NewSymbol("sizeof_vorbis_comment"), Integer::New(sizeof(vorbis_comment)));
+#define SIZEOF(value) \
+  target->Set(String::NewSymbol("sizeof_" #value), Integer::New(sizeof(value)), \
+      static_cast<PropertyAttribute>(ReadOnly|DontDelete))
+  SIZEOF(vorbis_info);
+  SIZEOF(vorbis_comment);
+  SIZEOF(vorbis_dsp_state);
+  SIZEOF(vorbis_block);
+
+  /* contants */
+#define CONST(value) \
+  target->Set(String::NewSymbol(#value), Integer::New(value), \
+      static_cast<PropertyAttribute>(ReadOnly|DontDelete))
+  CONST(OV_FALSE);
+  CONST(OV_EOF);
+  CONST(OV_HOLE);
+
+  CONST(OV_EREAD);
+  CONST(OV_EFAULT);
+  CONST(OV_EIMPL);
+  CONST(OV_EINVAL);
+  CONST(OV_ENOTVORBIS);
+  CONST(OV_EBADHEADER);
+  CONST(OV_EVERSION);
+  CONST(OV_ENOTAUDIO);
+  CONST(OV_EBADPACKET);
+  CONST(OV_EBADLINK);
+  CONST(OV_ENOSEEK);
 
   NODE_SET_METHOD(target, "vorbis_synthesis_headerin", node_vorbis_synthesis_headerin);
 }
