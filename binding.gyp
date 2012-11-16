@@ -6,7 +6,7 @@
         'src/binding.cc',
       ],
       'dependencies': [
-        'deps/libvorbis/libvorbis.gyp:vorbis',
+        'deps/libvorbis/libvorbis.gyp:libvorbis',
       ],
     }
   ]

@@ -86,7 +86,7 @@
       'target_name': 'vorbisenc',
       'product_prefix': 'lib',
       'type': 'static_library',
-      'dependencies': [ 'vorbis' ],
+      'dependencies': [ 'libvorbis' ],
       'sources': [
         'lib/vorbisenc.c'
       ]
@@ -97,7 +97,7 @@
       'target_name': 'vorbisfile',
       'product_prefix': 'lib',
       'type': 'static_library',
-      'dependencies': [ 'vorbis' ],
+      'dependencies': [ 'libvorbis' ],
       'sources': [
         'lib/vorbisfile.c'
       ]
@@ -105,8 +105,8 @@
 
     # libvorbis
     {
-      'target_name': 'vorbis',
-      'product_prefix': 'lib',
+      'target_name': 'libvorbis',
+      'product_prefix': '',
       'type': 'static_library',
       'sources': [
         'lib/mdct.c',
@@ -135,7 +135,7 @@
     {
       'target_name': 'test',
       'type': 'executable',
-      'dependencies': [ 'vorbisenc' ],
+      'dependencies': [ 'libvorbis' ],
       'sources': [ 'examples/decoder_example.c' ]
     },
   ]
