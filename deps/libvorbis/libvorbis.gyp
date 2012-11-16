@@ -39,10 +39,6 @@
     },
 
     # common vorbis stuff
-    'defines': [
-      'PIC',
-      'HAVE_CONFIG_H',
-    ],
     'include_dirs': [
       # platform and arch-specific headers
       'config/<(OS)/<(target_arch)',
@@ -76,6 +72,12 @@
           ['target_arch=="x64"', { 'xcode_settings': { 'ARCHS': [ 'x86_64' ] } }]
         ],
       }],
+      ['OS!="win"', {
+        'defines': [
+          'PIC',
+          'HAVE_CONFIG_H',
+        ],
+      }]
     ],
   },
 
