@@ -125,7 +125,7 @@ Handle<Value> node_vorbis_synthesis_pcmout (const Arguments& args) {
   samples = vorbis_synthesis_pcmout(vd, &pcm);
 
   if (samples > 0) {
-    // we need to interlace the pcm float data...
+    /* we need to interlace the pcm float data... */
     Buffer *buffer = Buffer::New(samples * channels * sizeof(float));
     float *buf = reinterpret_cast<float *>(Buffer::Data(buffer));
     int i, j;
@@ -134,13 +134,13 @@ Handle<Value> node_vorbis_synthesis_pcmout (const Arguments& args) {
       float *mono = pcm[i];
       for (j = 0; j < samples; j++) {
         *ptr = mono[j];
-        //fprintf(stderr, "%d, %d: %f\n", i, j, *ptr);
         ptr += channels;
       }
     }
     vorbis_synthesis_read(vd, samples);
     rtn = buffer->handle_;
   } else {
+    /* an error or 0 samples */
     rtn = Integer::New(samples);
   }
 
