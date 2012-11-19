@@ -14,6 +14,11 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+/*
+ * libvorbis API reference:
+ * http://xiph.org/vorbis/doc/libvorbis/reference.html
+ */
+
 #include <v8.h>
 #include <node.h>
 #include <string.h>
