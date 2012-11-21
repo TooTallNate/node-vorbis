@@ -94,15 +94,45 @@ Handle<Value> node_get_format (const Arguments& args) {
   return scope.Close(format);
 }
 
-/* TODO: async */
+
+/* vorbis_synthesis_headerin() called on the thread pool */
 Handle<Value> node_vorbis_synthesis_headerin (const Arguments& args) {
   HandleScope scope;
-  vorbis_info *vi = UnwrapPointer<vorbis_info *>(args[0]);
-  vorbis_comment *vc = UnwrapPointer<vorbis_comment *>(args[1]);
-  ogg_packet *op = UnwrapPointer<ogg_packet *>(args[2]);
+  Local<Function> callback = Local<Function>::Cast(args[3]);
 
-  int i = vorbis_synthesis_headerin(vi, vc, op);
-  return scope.Close(Integer::New(i));
+  headerin_req *r = new headerin_req;
+  r->vi = UnwrapPointer<vorbis_info *>(args[0]);
+  r->vc = UnwrapPointer<vorbis_comment *>(args[1]);
+  r->op = UnwrapPointer<ogg_packet *>(args[2]);
+  r->rtn = 0;
+  r->callback = Persistent<Function>::New(callback);
+  r->req.data = r;
+
+  uv_queue_work(uv_default_loop(), &r->req, node_vorbis_synthesis_headerin_async, node_vorbis_synthesis_headerin_after);
+  return Undefined();
+}
+
+void node_vorbis_synthesis_headerin_async (uv_work_t *req) {
+  headerin_req *r = reinterpret_cast<headerin_req *>(req->data);
+  r->rtn = vorbis_synthesis_headerin(r->vi, r->vc, r->op);
+}
+
+void node_vorbis_synthesis_headerin_after (uv_work_t *req) {
+  HandleScope scope;
+  headerin_req *r = reinterpret_cast<headerin_req *>(req->data);
+
+  Handle<Value> argv[1] = { Integer::New(r->rtn) };
+
+  TryCatch try_catch;
+  r->callback->Call(Context::GetCurrent()->Global(), 1, argv);
+
+  // cleanup
+  r->callback.Dispose();
+  delete r;
+
+  if (try_catch.HasCaught()) {
+    FatalException(try_catch);
+  }
 }
 
 /* TODO: async */
