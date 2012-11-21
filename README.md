@@ -29,8 +29,7 @@ var file = __dirname + '/Hydrate-Kenny_Beltrey.ogg';
 
 var od = new ogg.Decoder();
 od.on('stream', function (stream) {
-  var vd = new vorbis.Decoder();
-  stream.use(vd);
+  var vd = new vorbis.Decoder(stream);
 
   // the "format" event contains the raw PCM format
   vd.on('format', function (format) {
