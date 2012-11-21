@@ -6,6 +6,15 @@
 
 require('ogg');
 
+/**
+ * The `Decoder` class. Write `ogg_packet`s to it and it will output
+ * raw PCM float data.
+ */
+
 exports.Decoder = require('./lib/decoder');
+
+/**
+ * The `Encoder` class.
+ */
 
 //exports.Encoder = require('./lib/encoder');
