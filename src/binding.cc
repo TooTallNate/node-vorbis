@@ -23,6 +23,7 @@
 #include <node.h>
 #include <string.h>
 
+#include "binding.h"
 #include "node_buffer.h"
 #include "node_pointer.h"
 #include "ogg/ogg.h"
@@ -33,6 +34,7 @@ using namespace node;
 
 namespace nodevorbis {
 
+
 Handle<Value> node_vorbis_info_init (const Arguments& args) {
   HandleScope scope;
   vorbis_info *vi = UnwrapPointer<vorbis_info *>(args[0]);
@@ -40,12 +42,14 @@ Handle<Value> node_vorbis_info_init (const Arguments& args) {
   return Undefined();
 }
 
+
 Handle<Value> node_vorbis_comment_init (const Arguments& args) {
   HandleScope scope;
   vorbis_comment *vc = UnwrapPointer<vorbis_comment *>(args[0]);
   vorbis_comment_init(vc);
   return Undefined();
 }
+
 
 Handle<Value> node_vorbis_synthesis_init (const Arguments& args) {
   HandleScope scope;
@@ -55,6 +59,7 @@ Handle<Value> node_vorbis_synthesis_init (const Arguments& args) {
   return scope.Close(Integer::New(r));
 }
 
+
 Handle<Value> node_vorbis_block_init (const Arguments& args) {
   HandleScope scope;
   vorbis_dsp_state *vd = UnwrapPointer<vorbis_dsp_state *>(args[0]);
@@ -62,6 +67,7 @@ Handle<Value> node_vorbis_block_init (const Arguments& args) {
   int r = vorbis_block_init(vd, vb);
   return scope.Close(Integer::New(r));
 }
+
 
 Handle<Value> node_comment_array (const Arguments& args) {
   HandleScope scope;
@@ -74,6 +80,7 @@ Handle<Value> node_comment_array (const Arguments& args) {
   array->Set(String::NewSymbol("vendor"), String::New(vc->vendor));
   return scope.Close(array);
 }
+
 
 Handle<Value> node_get_format (const Arguments& args) {
   HandleScope scope;
