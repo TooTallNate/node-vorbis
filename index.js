@@ -1,7 +1,7 @@
 
 /**
- * We have to load node-ogg in order for the libogg symbols
- * to be visible on Windows.
+ * node-ogg must be loaded first in order for the
+ * libogg symbols to be visible on Windows.
  */
 
 require('ogg');
@@ -14,7 +14,8 @@ require('ogg');
 exports.Decoder = require('./lib/decoder');
 
 /**
- * The `Encoder` class.
+ * The `Encoder` class. Write raw PCM float data to it and it'll produce
+ * `ogg_packet`s that you can weld into an ogg.Encoder stream.
  */
 
 //exports.Encoder = require('./lib/encoder');
