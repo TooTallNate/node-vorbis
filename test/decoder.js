@@ -15,6 +15,18 @@ describe('Decoder', function () {
   describe('Rondo_Alla_Turka.ogg', function () {
     var fixture = path.resolve(fixtures, 'Rondo_Alla_Turka.ogg');
 
+    it('should emit at least one "readable" event', function (done) {
+      var od = new ogg.Decoder();
+      od.on('stream', function (stream) {
+        var vd = new vorbis.Decoder(stream);
+        vd.on('readable', done);
+
+        // apparently this is what we have to do to make "readable" happen...
+        vd.read(0);
+      });
+      fs.createReadStream(fixture).pipe(od);
+    });
+
     it('should emit an "end" event', function (done) {
       this.test.slow(5000);
       this.test.timeout(10000);
