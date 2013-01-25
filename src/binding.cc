@@ -91,6 +91,11 @@ Handle<Value> node_get_format (const Arguments& args) {
   format->Set(String::NewSymbol("bitDepth"), Integer::New(sizeof(float) * 8));
   format->Set(String::NewSymbol("float"), True());
   format->Set(String::NewSymbol("signed"), True());
+  format->Set(String::NewSymbol("version"), Integer::New(vi->version));
+  format->Set(String::NewSymbol("bitrateUpper"), Number::New(vi->bitrate_upper));
+  format->Set(String::NewSymbol("bitrateNominal"), Number::New(vi->bitrate_nominal));
+  format->Set(String::NewSymbol("bitrateLower"), Number::New(vi->bitrate_lower));
+  format->Set(String::NewSymbol("bitrateWindow"), Number::New(vi->bitrate_window));
   return scope.Close(format);
 }
 
