@@ -18,8 +18,9 @@ describe('Decoder', function () {
     it('should emit at least one "readable" event', function (done) {
       var od = new ogg.Decoder();
       od.on('stream', function (stream) {
-        var vd = new vorbis.Decoder(stream);
+        var vd = new vorbis.Decoder();
         vd.on('readable', done);
+        stream.pipe(vd);
 
         // apparently this is what we have to do to make "readable" happen...
         vd.read(0);
@@ -33,8 +34,9 @@ describe('Decoder', function () {
 
       var od = new ogg.Decoder();
       od.on('stream', function (stream) {
-        var vd = new vorbis.Decoder(stream);
+        var vd = new vorbis.Decoder();
         vd.on('end', done);
+        stream.pipe(vd);
 
         // flow...
         vd.resume();
