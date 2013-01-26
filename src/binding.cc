@@ -108,7 +108,10 @@ Handle<Value> node_vorbis_synthesis_headerin (const Arguments& args) {
   r->callback = Persistent<Function>::New(callback);
   r->req.data = r;
 
-  uv_queue_work(uv_default_loop(), &r->req, node_vorbis_synthesis_headerin_async, node_vorbis_synthesis_headerin_after);
+  uv_queue_work(uv_default_loop(),
+                &r->req,
+                node_vorbis_synthesis_headerin_async,
+                (uv_after_work_cb)node_vorbis_synthesis_headerin_after);
   return Undefined();
 }
 
