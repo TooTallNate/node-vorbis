@@ -86,11 +86,21 @@ Handle<Value> node_get_format (const Arguments& args) {
   HandleScope scope;
   vorbis_info *vi = UnwrapPointer<vorbis_info *>(args[0]);
   Local<Object> format = Object::New();
+
+  /* PCM format properties */
   format->Set(String::NewSymbol("channels"), Integer::New(vi->channels));
   format->Set(String::NewSymbol("sampleRate"), Number::New(vi->rate));
   format->Set(String::NewSymbol("bitDepth"), Integer::New(sizeof(float) * 8));
   format->Set(String::NewSymbol("float"), True());
   format->Set(String::NewSymbol("signed"), True());
+
+  /* Other random info from the vorbis_info struct */
+  format->Set(String::NewSymbol("version"), Integer::New(vi->version));
+  format->Set(String::NewSymbol("bitrateUpper"), Number::New(vi->bitrate_upper));
+  format->Set(String::NewSymbol("bitrateNominal"), Number::New(vi->bitrate_nominal));
+  format->Set(String::NewSymbol("bitrateLower"), Number::New(vi->bitrate_lower));
+  format->Set(String::NewSymbol("bitrateWindow"), Number::New(vi->bitrate_window));
+
   return scope.Close(format);
 }
 
