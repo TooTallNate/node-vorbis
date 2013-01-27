@@ -28,6 +28,7 @@
 #include "node_pointer.h"
 #include "ogg/ogg.h"
 #include "vorbis/codec.h"
+#include "vorbis/vorbisenc.h"
 
 using namespace v8;
 using namespace node;
@@ -60,11 +61,44 @@ Handle<Value> node_vorbis_synthesis_init (const Arguments& args) {
 }
 
 
+Handle<Value> node_vorbis_analysis_init (const Arguments& args) {
+  HandleScope scope;
+  vorbis_dsp_state *vd = UnwrapPointer<vorbis_dsp_state *>(args[0]);
+  vorbis_info *vi = UnwrapPointer<vorbis_info *>(args[1]);
+  int r = vorbis_analysis_init(vd, vi);
+  return scope.Close(Integer::New(r));
+}
+
+
 Handle<Value> node_vorbis_block_init (const Arguments& args) {
   HandleScope scope;
   vorbis_dsp_state *vd = UnwrapPointer<vorbis_dsp_state *>(args[0]);
   vorbis_block *vb = UnwrapPointer<vorbis_block *>(args[1]);
   int r = vorbis_block_init(vd, vb);
+  return scope.Close(Integer::New(r));
+}
+
+
+Handle<Value> node_vorbis_encode_init_vbr (const Arguments& args) {
+  HandleScope scope;
+  vorbis_info *vi = UnwrapPointer<vorbis_info *>(args[0]);
+  long channels = args[1]->IntegerValue();
+  long rate = args[2]->IntegerValue();
+  float quality = args[3]->NumberValue();
+  int r = vorbis_encode_init_vbr(vi, channels, rate, quality);
+  return scope.Close(Integer::New(r));
+}
+
+
+/* TODO: async */
+Handle<Value> node_vorbis_analysis_headerout (const Arguments& args) {
+  HandleScope scope;
+  vorbis_dsp_state *vd = UnwrapPointer<vorbis_dsp_state *>(args[0]);
+  vorbis_comment *vc = UnwrapPointer<vorbis_comment *>(args[1]);
+  ogg_packet *op_header = UnwrapPointer<ogg_packet *>(args[2]);
+  ogg_packet *op_comments = UnwrapPointer<ogg_packet *>(args[3]);
+  ogg_packet *op_code = UnwrapPointer<ogg_packet *>(args[4]);
+  int r = vorbis_analysis_headerout(vd, vc, op_header, op_comments, op_code);
   return scope.Close(Integer::New(r));
 }
 
@@ -256,6 +290,7 @@ void Initialize(Handle<Object> target) {
   SIZEOF(vorbis_comment);
   SIZEOF(vorbis_dsp_state);
   SIZEOF(vorbis_block);
+  SIZEOF(ogg_packet);
 
   /* contants */
 #define CONST(value) \
@@ -281,7 +316,10 @@ void Initialize(Handle<Object> target) {
   NODE_SET_METHOD(target, "vorbis_info_init", node_vorbis_info_init);
   NODE_SET_METHOD(target, "vorbis_comment_init", node_vorbis_comment_init);
   NODE_SET_METHOD(target, "vorbis_synthesis_init", node_vorbis_synthesis_init);
+  NODE_SET_METHOD(target, "vorbis_analysis_init", node_vorbis_analysis_init);
   NODE_SET_METHOD(target, "vorbis_block_init", node_vorbis_block_init);
+  NODE_SET_METHOD(target, "vorbis_encode_init_vbr", node_vorbis_encode_init_vbr);
+  NODE_SET_METHOD(target, "vorbis_analysis_headerout", node_vorbis_analysis_headerout);
   NODE_SET_METHOD(target, "vorbis_synthesis_idheader", node_vorbis_synthesis_idheader);
   NODE_SET_METHOD(target, "vorbis_synthesis_headerin", node_vorbis_synthesis_headerin);
   NODE_SET_METHOD(target, "vorbis_synthesis", node_vorbis_synthesis);
