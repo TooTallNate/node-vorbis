@@ -90,19 +90,6 @@ Handle<Value> node_vorbis_encode_init_vbr (const Arguments& args) {
 }
 
 
-/* TODO: async */
-Handle<Value> node_vorbis_analysis_headerout (const Arguments& args) {
-  HandleScope scope;
-  vorbis_dsp_state *vd = UnwrapPointer<vorbis_dsp_state *>(args[0]);
-  vorbis_comment *vc = UnwrapPointer<vorbis_comment *>(args[1]);
-  ogg_packet *op_header = UnwrapPointer<ogg_packet *>(args[2]);
-  ogg_packet *op_comments = UnwrapPointer<ogg_packet *>(args[3]);
-  ogg_packet *op_code = UnwrapPointer<ogg_packet *>(args[4]);
-  int r = vorbis_analysis_headerout(vd, vc, op_header, op_comments, op_code);
-  return scope.Close(Integer::New(r));
-}
-
-
 Handle<Value> node_comment_array (const Arguments& args) {
   HandleScope scope;
   int i;
@@ -136,6 +123,197 @@ Handle<Value> node_get_format (const Arguments& args) {
   format->Set(String::NewSymbol("bitrateWindow"), Number::New(vi->bitrate_window));
 
   return scope.Close(format);
+}
+
+
+/* TODO: async */
+Handle<Value> node_vorbis_analysis_headerout (const Arguments& args) {
+  HandleScope scope;
+  vorbis_dsp_state *vd = UnwrapPointer<vorbis_dsp_state *>(args[0]);
+  vorbis_comment *vc = UnwrapPointer<vorbis_comment *>(args[1]);
+  ogg_packet *op_header = UnwrapPointer<ogg_packet *>(args[2]);
+  ogg_packet *op_comments = UnwrapPointer<ogg_packet *>(args[3]);
+  ogg_packet *op_code = UnwrapPointer<ogg_packet *>(args[4]);
+  int r = vorbis_analysis_headerout(vd, vc, op_header, op_comments, op_code);
+  return scope.Close(Integer::New(r));
+}
+
+
+/* combination of `vorbis_analysis_buffer()`, `memcpy()`, and
+ * `vorbis_analysis_wrote()` on the thread pool. */
+Handle<Value> node_vorbis_analysis_write (const Arguments& args) {
+  HandleScope scope;
+  Local<Function> callback = Local<Function>::Cast(args[4]);
+
+  write_req *r = new write_req;
+  r->vd = UnwrapPointer<vorbis_dsp_state *>(args[0]);
+  r->buffer = UnwrapPointer<float *>(args[1]);
+  r->channels = args[2]->IntegerValue();
+  r->samples = args[3]->NumberValue();
+  r->callback = Persistent<Function>::New(callback);
+  r->rtn = 0;
+  r->req.data = r;
+
+  uv_queue_work(uv_default_loop(),
+                &r->req,
+                node_vorbis_analysis_write_async,
+                (uv_after_work_cb)node_vorbis_analysis_write_after);
+  return Undefined();
+}
+
+void node_vorbis_analysis_write_async (uv_work_t *req) {
+  write_req *r = reinterpret_cast<write_req *>(req->data);
+
+  /* interleaved float samples */
+  float *input = r->buffer;
+  long samples = r->samples;
+  int channels = r->channels;
+  int i = 0, j = 0;
+
+  /* expose buffer to write PCM float samples to */
+  float **output = vorbis_analysis_buffer(r->vd, samples);
+
+  /* uninterleave samples */
+  for (i = 0; i < samples; i++) {
+    for (j = 0; j < channels; j++) {
+      output[j][i] = input[samples * channels + j];
+    }
+  }
+
+  /* tell the library how much we actually submitted */
+  r->rtn = vorbis_analysis_wrote(r->vd, i);
+}
+
+void node_vorbis_analysis_write_after (uv_work_t *req) {
+  HandleScope scope;
+  write_req *r = reinterpret_cast<write_req *>(req->data);
+
+  Handle<Value> argv[1] = { Integer::New(r->rtn) };
+
+  TryCatch try_catch;
+  r->callback->Call(Context::GetCurrent()->Global(), 1, argv);
+
+  // cleanup
+  r->callback.Dispose();
+  delete r;
+
+  if (try_catch.HasCaught()) {
+    FatalException(try_catch);
+  }
+}
+
+
+/* vorbis_analysis_blockout() on the thread pool */
+Handle<Value> node_vorbis_analysis_blockout (const Arguments& args) {
+  HandleScope scope;
+  Local<Function> callback = Local<Function>::Cast(args[2]);
+
+  blockout_req *r = new blockout_req;
+  r->vd = UnwrapPointer<vorbis_dsp_state *>(args[0]);
+  r->vb = UnwrapPointer<vorbis_block *>(args[1]);
+  r->callback = Persistent<Function>::New(callback);
+  r->rtn = 0;
+  r->req.data = r;
+
+  uv_queue_work(uv_default_loop(),
+                &r->req,
+                node_vorbis_analysis_blockout_async,
+                (uv_after_work_cb)node_vorbis_analysis_blockout_after);
+  return Undefined();
+}
+
+void node_vorbis_analysis_blockout_async (uv_work_t *req) {
+  blockout_req *r = reinterpret_cast<blockout_req *>(req->data);
+  r->rtn = vorbis_analysis_blockout(r->vd, r->vb);
+}
+
+void node_vorbis_analysis_blockout_after (uv_work_t *req) {
+  HandleScope scope;
+  blockout_req *r = reinterpret_cast<blockout_req *>(req->data);
+
+  Handle<Value> argv[1] = { Integer::New(r->rtn) };
+
+  TryCatch try_catch;
+  r->callback->Call(Context::GetCurrent()->Global(), 1, argv);
+
+  // cleanup
+  r->callback.Dispose();
+  delete r;
+
+  if (try_catch.HasCaught()) {
+    FatalException(try_catch);
+  }
+}
+
+/* TODO: async? */
+Handle<Value> node_vorbis_analysis_eos (const Arguments& args) {
+  HandleScope scope;
+  vorbis_dsp_state *vd = UnwrapPointer<vorbis_dsp_state *>(args[0]);
+
+  int i = vorbis_analysis_wrote(vd, 0);
+  return scope.Close(Integer::New(i));
+}
+
+/* TODO: async? */
+Handle<Value> node_vorbis_analysis (const Arguments& args) {
+  HandleScope scope;
+  vorbis_block *vb = UnwrapPointer<vorbis_block *>(args[0]);
+  ogg_packet *op = UnwrapPointer<ogg_packet *>(args[1]);
+
+  int i = vorbis_analysis(vb, op);
+  return scope.Close(Integer::New(i));
+}
+
+/* TODO: async? */
+Handle<Value> node_vorbis_bitrate_addblock (const Arguments& args) {
+  HandleScope scope;
+  vorbis_block *vb = UnwrapPointer<vorbis_block *>(args[0]);
+
+  int i = vorbis_bitrate_addblock(vb);
+  return scope.Close(Integer::New(i));
+}
+
+
+/* vorbis_bitrate_flushpacket() on the thread pool */
+Handle<Value> node_vorbis_bitrate_flushpacket (const Arguments& args) {
+  HandleScope scope;
+  Local<Function> callback = Local<Function>::Cast(args[2]);
+
+  flushpacket_req *r = new flushpacket_req;
+  r->vd = UnwrapPointer<vorbis_dsp_state *>(args[0]);
+  r->op = UnwrapPointer<ogg_packet *>(args[1]);
+  r->callback = Persistent<Function>::New(callback);
+  r->rtn = 0;
+  r->req.data = r;
+
+  uv_queue_work(uv_default_loop(),
+                &r->req,
+                node_vorbis_bitrate_flushpacket_async,
+                (uv_after_work_cb)node_vorbis_bitrate_flushpacket_after);
+  return Undefined();
+}
+
+void node_vorbis_bitrate_flushpacket_async (uv_work_t *req) {
+  flushpacket_req *r = reinterpret_cast<flushpacket_req *>(req->data);
+  r->rtn = vorbis_bitrate_flushpacket(r->vd, r->op);
+}
+
+void node_vorbis_bitrate_flushpacket_after (uv_work_t *req) {
+  HandleScope scope;
+  flushpacket_req *r = reinterpret_cast<flushpacket_req *>(req->data);
+
+  Handle<Value> argv[1] = { Integer::New(r->rtn) };
+
+  TryCatch try_catch;
+  r->callback->Call(Context::GetCurrent()->Global(), 1, argv);
+
+  // cleanup
+  r->callback.Dispose();
+  delete r;
+
+  if (try_catch.HasCaught()) {
+    FatalException(try_catch);
+  }
 }
 
 
@@ -235,6 +413,7 @@ Handle<Value> node_vorbis_synthesis (const Arguments& args) {
   return scope.Close(Integer::New(i));
 }
 
+
 /* TODO: async */
 Handle<Value> node_vorbis_synthesis_blockin (const Arguments& args) {
   HandleScope scope;
@@ -244,6 +423,7 @@ Handle<Value> node_vorbis_synthesis_blockin (const Arguments& args) {
   int i = vorbis_synthesis_blockin(vd, vb);
   return scope.Close(Integer::New(i));
 }
+
 
 /* TODO: async */
 Handle<Value> node_vorbis_synthesis_pcmout (const Arguments& args) {
@@ -278,6 +458,7 @@ Handle<Value> node_vorbis_synthesis_pcmout (const Arguments& args) {
 
   return scope.Close(rtn);
 }
+
 
 void Initialize(Handle<Object> target) {
   HandleScope scope;
@@ -320,6 +501,12 @@ void Initialize(Handle<Object> target) {
   NODE_SET_METHOD(target, "vorbis_block_init", node_vorbis_block_init);
   NODE_SET_METHOD(target, "vorbis_encode_init_vbr", node_vorbis_encode_init_vbr);
   NODE_SET_METHOD(target, "vorbis_analysis_headerout", node_vorbis_analysis_headerout);
+  NODE_SET_METHOD(target, "vorbis_analysis_write", node_vorbis_analysis_write);
+  NODE_SET_METHOD(target, "vorbis_analysis_blockout", node_vorbis_analysis_blockout);
+  NODE_SET_METHOD(target, "vorbis_analysis_eos", node_vorbis_analysis_eos);
+  NODE_SET_METHOD(target, "vorbis_analysis", node_vorbis_analysis);
+  NODE_SET_METHOD(target, "vorbis_bitrate_addblock", node_vorbis_bitrate_addblock);
+  NODE_SET_METHOD(target, "vorbis_bitrate_flushpacket", node_vorbis_bitrate_flushpacket);
   NODE_SET_METHOD(target, "vorbis_synthesis_idheader", node_vorbis_synthesis_idheader);
   NODE_SET_METHOD(target, "vorbis_synthesis_headerin", node_vorbis_synthesis_headerin);
   NODE_SET_METHOD(target, "vorbis_synthesis", node_vorbis_synthesis);
