@@ -1,10 +1,22 @@
 
 /**
- * node-ogg must be loaded first in order for the
- * libogg symbols to be visible on Windows.
+ * Module dependencies.
  */
 
-require('ogg');
+var binding = require('./lib/binding');
+
+/**
+ * libvorbis version string.
+ */
+
+exports.version = binding.version;
+
+/**
+ * Async function that checks if the given `ogg_packet` is Vorbis data. The packet
+ * must be the first packet in the ogg stream.
+ */
+
+exports.isVorbis = binding.vorbis_synthesis_idheader;
 
 /**
  * The `Decoder` class. Write `ogg_packet`s to it and it will output
