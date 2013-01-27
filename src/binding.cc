@@ -190,6 +190,7 @@ void node_vorbis_synthesis_headerin_after (uv_work_t *req) {
   }
 }
 
+
 /* TODO: async */
 Handle<Value> node_vorbis_synthesis (const Arguments& args) {
   HandleScope scope;
@@ -286,6 +287,8 @@ void Initialize(Handle<Object> target) {
   NODE_SET_METHOD(target, "vorbis_synthesis", node_vorbis_synthesis);
   NODE_SET_METHOD(target, "vorbis_synthesis_blockin", node_vorbis_synthesis_blockin);
   NODE_SET_METHOD(target, "vorbis_synthesis_pcmout", node_vorbis_synthesis_pcmout);
+
+  /* custom functions */
   NODE_SET_METHOD(target, "comment_array", node_comment_array);
   NODE_SET_METHOD(target, "get_format", node_get_format);
 
