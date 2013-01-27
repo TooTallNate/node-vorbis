@@ -3,6 +3,13 @@
 
 namespace nodevorbis {
 
+struct idheader_req {
+  uv_work_t req;
+  ogg_packet *op;
+  int rtn;
+  v8::Persistent<v8::Function> callback;
+};
+
 struct headerin_req {
   uv_work_t req;
   vorbis_info *vi;
@@ -38,6 +45,9 @@ struct pcmout_req {
 };
 
 /* Decoding */
+void node_vorbis_synthesis_idheader_async (uv_work_t *);
+void node_vorbis_synthesis_idheader_after (uv_work_t *);
+
 void node_vorbis_synthesis_headerin_async (uv_work_t *);
 void node_vorbis_synthesis_headerin_after (uv_work_t *);
 

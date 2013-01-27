@@ -105,6 +105,48 @@ Handle<Value> node_get_format (const Arguments& args) {
 }
 
 
+/* vorbis_synthesis_idheader() called on the thread pool */
+Handle<Value> node_vorbis_synthesis_idheader (const Arguments& args) {
+  HandleScope scope;
+  Local<Function> callback = Local<Function>::Cast(args[1]);
+
+  idheader_req *r = new idheader_req;
+  r->op = UnwrapPointer<ogg_packet *>(args[0]);
+  r->callback = Persistent<Function>::New(callback);
+  r->rtn = 0;
+  r->req.data = r;
+
+  uv_queue_work(uv_default_loop(),
+                &r->req,
+                node_vorbis_synthesis_idheader_async,
+                (uv_after_work_cb)node_vorbis_synthesis_idheader_after);
+  return Undefined();
+}
+
+void node_vorbis_synthesis_idheader_async (uv_work_t *req) {
+  idheader_req *r = reinterpret_cast<idheader_req *>(req->data);
+  r->rtn = vorbis_synthesis_idheader(r->op);
+}
+
+void node_vorbis_synthesis_idheader_after (uv_work_t *req) {
+  HandleScope scope;
+  idheader_req *r = reinterpret_cast<idheader_req *>(req->data);
+
+  Handle<Value> argv[] = { Null(), Boolean::New(r->rtn) };
+
+  TryCatch try_catch;
+  r->callback->Call(Context::GetCurrent()->Global(), 2, argv);
+
+  // cleanup
+  r->callback.Dispose();
+  delete r;
+
+  if (try_catch.HasCaught()) {
+    FatalException(try_catch);
+  }
+}
+
+
 /* vorbis_synthesis_headerin() called on the thread pool */
 Handle<Value> node_vorbis_synthesis_headerin (const Arguments& args) {
   HandleScope scope;
@@ -239,6 +281,7 @@ void Initialize(Handle<Object> target) {
   NODE_SET_METHOD(target, "vorbis_comment_init", node_vorbis_comment_init);
   NODE_SET_METHOD(target, "vorbis_synthesis_init", node_vorbis_synthesis_init);
   NODE_SET_METHOD(target, "vorbis_block_init", node_vorbis_block_init);
+  NODE_SET_METHOD(target, "vorbis_synthesis_idheader", node_vorbis_synthesis_idheader);
   NODE_SET_METHOD(target, "vorbis_synthesis_headerin", node_vorbis_synthesis_headerin);
   NODE_SET_METHOD(target, "vorbis_synthesis", node_vorbis_synthesis);
   NODE_SET_METHOD(target, "vorbis_synthesis_blockin", node_vorbis_synthesis_blockin);
