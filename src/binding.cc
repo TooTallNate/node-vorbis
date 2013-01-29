@@ -176,7 +176,7 @@ void node_vorbis_analysis_write_async (uv_work_t *req) {
   /* uninterleave samples */
   for (i = 0; i < samples; i++) {
     for (j = 0; j < channels; j++) {
-      output[j][i] = input[samples * channels + j];
+      output[j][i] = input[i * channels + j];
     }
   }
 
