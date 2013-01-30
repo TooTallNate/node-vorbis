@@ -1,3 +1,8 @@
 build
 node_modules
 npm-debug.log
+
+/* root level stuff that I play around with */
+/*.js
+/*.ogg
+/*.f32le
