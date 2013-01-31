@@ -9,8 +9,7 @@
 {
   'variables': {
     'target_arch%': 'ia32', # build for a 32-bit CPU by default
-    'ogg_include_dirs%': [],
-    'ogg_libraries%': [ '-logg' ],
+    'ogg_include_dirs%': ['libogg/include', 'libogg/config/<(OS)/<(target_arch)'],
   },
   'target_defaults': {
     'default_configuration': 'Debug',
@@ -55,11 +54,6 @@
         '<@(ogg_include_dirs)',
         'include',
       ],
-    },
-    'link_settings': {
-      'libraries': [
-        '<@(ogg_libraries)',
-      ]
     },
     'conditions': [
       ['OS=="mac"', {
@@ -110,6 +104,7 @@
       'target_name': 'libvorbis',
       'product_prefix': '',
       'type': 'static_library',
+      'dependencies': [ 'libogg/libogg.gyp:libogg' ],
       'sources': [
         'lib/mdct.c',
         'lib/smallft.c',
