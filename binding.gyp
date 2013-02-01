@@ -7,6 +7,7 @@
       ],
       'dependencies': [
         'deps/libvorbis/libvorbis.gyp:libvorbis',
+        'deps/libvorbis/libvorbis.gyp:vorbisenc',
       ],
     }
   ]

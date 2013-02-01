@@ -3,6 +3,31 @@
 
 namespace nodevorbis {
 
+struct write_req {
+  uv_work_t req;
+  vorbis_dsp_state *vd;
+  float *buffer;
+  int channels;
+  long samples;
+  int rtn;
+  v8::Persistent<v8::Function> callback;
+};
+
+struct flushpacket_req {
+  uv_work_t req;
+  vorbis_dsp_state *vd;
+  ogg_packet *op;
+  int rtn;
+  v8::Persistent<v8::Function> callback;
+};
+
+struct idheader_req {
+  uv_work_t req;
+  ogg_packet *op;
+  int rtn;
+  v8::Persistent<v8::Function> callback;
+};
+
 struct headerin_req {
   uv_work_t req;
   vorbis_info *vi;
@@ -28,6 +53,8 @@ struct blockin_req {
   v8::Persistent<v8::Function> callback;
 };
 
+typedef blockin_req blockout_req;
+
 struct pcmout_req {
   uv_work_t req;
   vorbis_dsp_state *vd;
@@ -37,7 +64,20 @@ struct pcmout_req {
   v8::Persistent<v8::Function> callback;
 };
 
+/* Encoding */
+void node_vorbis_analysis_write_async (uv_work_t *);
+void node_vorbis_analysis_write_after (uv_work_t *);
+
+void node_vorbis_analysis_blockout_async (uv_work_t *);
+void node_vorbis_analysis_blockout_after (uv_work_t *);
+
+void node_vorbis_bitrate_flushpacket_async (uv_work_t *);
+void node_vorbis_bitrate_flushpacket_after (uv_work_t *);
+
 /* Decoding */
+void node_vorbis_synthesis_idheader_async (uv_work_t *);
+void node_vorbis_synthesis_idheader_after (uv_work_t *);
+
 void node_vorbis_synthesis_headerin_async (uv_work_t *);
 void node_vorbis_synthesis_headerin_after (uv_work_t *);
 

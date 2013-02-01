@@ -18,4 +18,4 @@ exports.Decoder = require('./lib/decoder');
  * `ogg_packet`s that you can weld into an ogg.Encoder stream.
  */
 
-//exports.Encoder = require('./lib/encoder');
+exports.Encoder = require('./lib/encoder');
