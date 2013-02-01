@@ -19,8 +19,8 @@
   "dependencies": {
     "bindings": "*",
     "debug": "*",
-    "ogg": "*",
-    "readable-stream": "~0.0.3"
+    "ogg": "https://github.com/arunoda/node-ogg/archive/master.tar.gz",
+    "readable-stream": "0.1.x"
   },
   "devDependencies": {
     "mocha": "*"
