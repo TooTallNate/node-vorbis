@@ -12,8 +12,8 @@ var fixtures = path.resolve(__dirname, 'fixtures');
 
 describe('Decoder', function () {
 
-  describe('Rondo_Alla_Turka.ogg', function () {
-    var fixture = path.resolve(fixtures, 'Rondo_Alla_Turka.ogg');
+  describe('pipershut_lo.ogg', function () {
+    var fixture = path.resolve(fixtures, 'pipershut_lo.ogg');
 
     it('should emit at least one "readable" event', function (done) {
       var od = new ogg.Decoder();
