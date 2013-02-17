@@ -29,7 +29,7 @@ describe('Decoder', function () {
     });
 
     it('should emit an "end" event', function (done) {
-      this.test.slow(5000);
+      this.test.slow(8000);
       this.test.timeout(10000);
 
       var od = new ogg.Decoder();
