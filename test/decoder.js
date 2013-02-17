@@ -29,9 +29,6 @@ describe('Decoder', function () {
     });
 
     it('should emit a "comments" event', function (done) {
-      //this.test.slow(8000);
-      //this.test.timeout(10000);
-
       var od = new ogg.Decoder();
       od.on('stream', function (stream) {
         var vd = new vorbis.Decoder();
@@ -76,6 +73,7 @@ describe('Decoder', function () {
   });
 
   describe('Rooster_crowing_small.ogg', function () {
+    var serialno = 0x000010cd; // serial number of the vorbis stream in the file
     var fixture = path.resolve(fixtures, 'Rooster_crowing_small.ogg');
 
     it('should emit 1 vorbis stream out of 3 ogg streams', function (done) {
@@ -104,6 +102,29 @@ describe('Decoder', function () {
         assert.equal(3, streamCount);
         assert.equal(1, vorbisCount);
         done();
+      });
+      fs.createReadStream(fixture).pipe(od);
+    });
+
+    it('should emit a "comments" event', function (done) {
+
+      var od = new ogg.Decoder();
+      od.on('stream', function (stream) {
+        if (stream.serialno != serialno) return stream.resume(); // flow..
+
+        var vd = new vorbis.Decoder();
+        vd.on('comments', function (comments) {
+          assert(Array.isArray(comments));
+          assert.equal(comments.vendor, 'Xiph.Org libVorbis I 20090709');
+          assert.equal(2, comments.length);
+          assert.equal('ENCODER=ffmpeg2theora-0.26', comments[0]);
+          assert.equal('SOURCE_OSHASH=8f2f46a0dbffe201', comments[1]);
+          done();
+        });
+        stream.pipe(vd);
+
+        // flow...
+        vd.resume();
       });
       fs.createReadStream(fixture).pipe(od);
     });
