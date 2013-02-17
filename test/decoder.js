@@ -28,6 +28,35 @@ describe('Decoder', function () {
       fs.createReadStream(fixture).pipe(od);
     });
 
+    it('should emit a "comments" event', function (done) {
+      //this.test.slow(8000);
+      //this.test.timeout(10000);
+
+      var od = new ogg.Decoder();
+      od.on('stream', function (stream) {
+        var vd = new vorbis.Decoder();
+        vd.on('comments', function (comments) {
+          assert(Array.isArray(comments));
+          assert.equal(comments.vendor, 'Lavf54.59.106');
+          assert.equal(8, comments.length);
+          assert.equal('TRACKNUMBER=8', comments[0]);
+          assert.equal('copyright=the Cuffe Family', comments[1]);
+          assert.equal('genre=Celtic', comments[2]);
+          assert.equal('album=Sae Will We Yet', comments[3]);
+          assert.equal('artist=Tony Cuffe & Billy Jackson', comments[4]);
+          assert.equal('title=The Burning of the Piper\'s Hut', comments[5]);
+          assert.equal('date=2003', comments[6]);
+          assert.equal('encoder=Lavf54.59.106', comments[7]);
+          done();
+        });
+        stream.pipe(vd);
+
+        // flow...
+        vd.resume();
+      });
+      fs.createReadStream(fixture).pipe(od);
+    });
+
     it('should emit an "end" event', function (done) {
       this.test.slow(8000);
       this.test.timeout(10000);
