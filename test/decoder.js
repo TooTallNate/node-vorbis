@@ -75,4 +75,39 @@ describe('Decoder', function () {
 
   });
 
+  describe('Rooster_crowing_small.ogg', function () {
+    var fixture = path.resolve(fixtures, 'Rooster_crowing_small.ogg');
+
+    it('should emit 1 vorbis stream out of 3 ogg streams', function (done) {
+      var od = new ogg.Decoder();
+      var streamCount = 0;
+      var vorbisCount = 0;
+      od.on('stream', function (stream) {
+        streamCount++;
+        // read the first "packet"
+        read();
+        function read () {
+          var packet = stream.read();
+          if (packet) {
+            vorbis.isVorbis(packet, function (err, is) {
+              if (err) return done(err);
+              if (is) vorbisCount++;
+              stream.resume();
+            });
+          } else {
+            // need to wait
+            stream.once('readable', read);
+          }
+        }
+      });
+      od.on('finish', function () {
+        assert.equal(3, streamCount);
+        assert.equal(1, vorbisCount);
+        done();
+      });
+      fs.createReadStream(fixture).pipe(od);
+    });
+
+  });
+
 });
