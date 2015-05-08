@@ -18,9 +18,9 @@
   "main": "./index.js",
   "dependencies": {
     "bindings": "~1.2.0",
-    "debug": "~1.0.0",
-    "nan": "^1.7.0",
-    "ogg": "1.1.2",
+    "debug": "2",
+    "nan": "~1.8.4",
+    "ogg": "~1.2.0",
     "readable-stream": "1.0"
   },
   "devDependencies": {
