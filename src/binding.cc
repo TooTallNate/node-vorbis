@@ -21,9 +21,9 @@
 
 #include <v8.h>
 #include <node.h>
+#include <nan.h>
 #include <string.h>
 
-#include "binding.h"
 #include "node_buffer.h"
 #include "node_pointer.h"
 #include "ogg/ogg.h"
@@ -36,398 +36,352 @@ using namespace node;
 namespace nodevorbis {
 
 
-Handle<Value> node_vorbis_info_init (const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(node_vorbis_info_init) {
+  NanScope();
   vorbis_info *vi = UnwrapPointer<vorbis_info *>(args[0]);
   vorbis_info_init(vi);
-  return Undefined();
+  NanReturnUndefined();
 }
 
 
-Handle<Value> node_vorbis_comment_init (const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(node_vorbis_comment_init) {
+  NanScope();
   vorbis_comment *vc = UnwrapPointer<vorbis_comment *>(args[0]);
   vorbis_comment_init(vc);
-  return Undefined();
+  NanReturnUndefined();
 }
 
 
-Handle<Value> node_vorbis_synthesis_init (const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(node_vorbis_synthesis_init) {
+  NanScope();
   vorbis_dsp_state *vd = UnwrapPointer<vorbis_dsp_state *>(args[0]);
   vorbis_info *vi = UnwrapPointer<vorbis_info *>(args[1]);
   int r = vorbis_synthesis_init(vd, vi);
-  return scope.Close(Integer::New(r));
+  NanReturnValue(NanNew<Integer>(r));
 }
 
 
-Handle<Value> node_vorbis_analysis_init (const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(node_vorbis_analysis_init) {
+  NanScope();
   vorbis_dsp_state *vd = UnwrapPointer<vorbis_dsp_state *>(args[0]);
   vorbis_info *vi = UnwrapPointer<vorbis_info *>(args[1]);
   int r = vorbis_analysis_init(vd, vi);
-  return scope.Close(Integer::New(r));
+  NanReturnValue(NanNew<Integer>(r));
 }
 
 
-Handle<Value> node_vorbis_block_init (const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(node_vorbis_block_init) {
+  NanScope();
   vorbis_dsp_state *vd = UnwrapPointer<vorbis_dsp_state *>(args[0]);
   vorbis_block *vb = UnwrapPointer<vorbis_block *>(args[1]);
   int r = vorbis_block_init(vd, vb);
-  return scope.Close(Integer::New(r));
+  NanReturnValue(NanNew<Integer>(r));
 }
 
 
-Handle<Value> node_vorbis_encode_init_vbr (const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(node_vorbis_encode_init_vbr) {
+  NanScope();
   vorbis_info *vi = UnwrapPointer<vorbis_info *>(args[0]);
   long channels = args[1]->IntegerValue();
   long rate = args[2]->IntegerValue();
   float quality = args[3]->NumberValue();
   int r = vorbis_encode_init_vbr(vi, channels, rate, quality);
-  return scope.Close(Integer::New(r));
+  NanReturnValue(NanNew<Integer>(r));
 }
 
 
-Handle<Value> node_comment_array (const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(node_comment_array) {
+  NanScope();
   int i;
   vorbis_comment *vc = UnwrapPointer<vorbis_comment *>(args[0]);
-  Local<Array> array = Array::New(vc->comments);
+  Local<Array> array = NanNew<Array>(vc->comments);
   for (i = 0; i < vc->comments; i++) {
-    array->Set(i, String::New(vc->user_comments[i], vc->comment_lengths[i]));
+    array->Set(i, NanNew<String>(vc->user_comments[i], vc->comment_lengths[i]));
   }
-  array->Set(String::NewSymbol("vendor"), String::New(vc->vendor));
-  return scope.Close(array);
+  array->Set(NanNew<String>("vendor"), NanNew<String>(vc->vendor));
+  NanReturnValue(array);
 }
 
 
-Handle<Value> node_get_format (const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(node_get_format) {
+  NanScope();
   vorbis_info *vi = UnwrapPointer<vorbis_info *>(args[0]);
-  Local<Object> format = Object::New();
+  Local<Object> format = NanNew<Object>();
 
   /* PCM format properties */
-  format->Set(String::NewSymbol("channels"), Integer::New(vi->channels));
-  format->Set(String::NewSymbol("sampleRate"), Number::New(vi->rate));
-  format->Set(String::NewSymbol("bitDepth"), Integer::New(sizeof(float) * 8));
-  format->Set(String::NewSymbol("float"), True());
-  format->Set(String::NewSymbol("signed"), True());
+  format->Set(NanNew<String>("channels"), NanNew<Integer>(vi->channels));
+  format->Set(NanNew<String>("sampleRate"), NanNew<Number>(vi->rate));
+  format->Set(NanNew<String>("bitDepth"), NanNew<Integer>(static_cast<int32_t>(sizeof(float) * 8)));
+  format->Set(NanNew<String>("float"), NanTrue());
+  format->Set(NanNew<String>("signed"), NanTrue());
 
   /* Other random info from the vorbis_info struct */
-  format->Set(String::NewSymbol("version"), Integer::New(vi->version));
-  format->Set(String::NewSymbol("bitrateUpper"), Number::New(vi->bitrate_upper));
-  format->Set(String::NewSymbol("bitrateNominal"), Number::New(vi->bitrate_nominal));
-  format->Set(String::NewSymbol("bitrateLower"), Number::New(vi->bitrate_lower));
-  format->Set(String::NewSymbol("bitrateWindow"), Number::New(vi->bitrate_window));
+  format->Set(NanNew<String>("version"), NanNew<Integer>(vi->version));
+  format->Set(NanNew<String>("bitrateUpper"), NanNew<Number>(vi->bitrate_upper));
+  format->Set(NanNew<String>("bitrateNominal"), NanNew<Number>(vi->bitrate_nominal));
+  format->Set(NanNew<String>("bitrateLower"), NanNew<Number>(vi->bitrate_lower));
+  format->Set(NanNew<String>("bitrateWindow"), NanNew<Number>(vi->bitrate_window));
 
-  return scope.Close(format);
+  NanReturnValue(format);
 }
 
 
 /* TODO: async */
-Handle<Value> node_vorbis_analysis_headerout (const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(node_vorbis_analysis_headerout) {
+  NanScope();
   vorbis_dsp_state *vd = UnwrapPointer<vorbis_dsp_state *>(args[0]);
   vorbis_comment *vc = UnwrapPointer<vorbis_comment *>(args[1]);
   ogg_packet *op_header = UnwrapPointer<ogg_packet *>(args[2]);
   ogg_packet *op_comments = UnwrapPointer<ogg_packet *>(args[3]);
   ogg_packet *op_code = UnwrapPointer<ogg_packet *>(args[4]);
   int r = vorbis_analysis_headerout(vd, vc, op_header, op_comments, op_code);
-  return scope.Close(Integer::New(r));
+  NanReturnValue(NanNew<Integer>(r));
 }
 
 
 /* combination of `vorbis_analysis_buffer()`, `memcpy()`, and
  * `vorbis_analysis_wrote()` on the thread pool. */
-Handle<Value> node_vorbis_analysis_write (const Arguments& args) {
-  HandleScope scope;
-  Local<Function> callback = Local<Function>::Cast(args[4]);
 
-  write_req *r = new write_req;
-  r->vd = UnwrapPointer<vorbis_dsp_state *>(args[0]);
-  r->buffer = UnwrapPointer<float *>(args[1]);
-  r->channels = args[2]->IntegerValue();
-  r->samples = args[3]->NumberValue();
-  r->callback = Persistent<Function>::New(callback);
-  r->rtn = 0;
-  r->req.data = r;
+class AnalysisWriteWorker : public NanAsyncWorker {
+ public:
+  AnalysisWriteWorker(vorbis_dsp_state *vd, float *buffer, int channels, long samples, NanCallback *callback)
+    : vd(vd), buffer(buffer), channels(channels), samples(samples), rtn(0),
+    NanAsyncWorker(callback) { }
+  ~AnalysisWriteWorker() { }
+  void Execute () {
+    /* input samples are interleaved floats */
+    int i = 0, j = 0;
 
-  uv_queue_work(uv_default_loop(),
-                &r->req,
-                node_vorbis_analysis_write_async,
-                (uv_after_work_cb)node_vorbis_analysis_write_after);
-  return Undefined();
-}
+    /* expose buffer to write PCM float samples to */
+    float **output = vorbis_analysis_buffer(vd, samples);
 
-void node_vorbis_analysis_write_async (uv_work_t *req) {
-  write_req *r = reinterpret_cast<write_req *>(req->data);
-
-  /* interleaved float samples */
-  float *input = r->buffer;
-  long samples = r->samples;
-  int channels = r->channels;
-  int i = 0, j = 0;
-
-  /* expose buffer to write PCM float samples to */
-  float **output = vorbis_analysis_buffer(r->vd, samples);
-
-  /* uninterleave samples */
-  for (i = 0; i < samples; i++) {
-    for (j = 0; j < channels; j++) {
-      output[j][i] = input[i * channels + j];
+    /* uninterleave samples */
+    for (i = 0; i < samples; i++) {
+      for (j = 0; j < channels; j++) {
+        output[j][i] = buffer[i * channels + j];
+      }
     }
+
+    /* tell the library how much we actually submitted */
+    rtn = vorbis_analysis_wrote(vd, i);
   }
+  void HandleOKCallback () {
+    NanScope();
 
-  /* tell the library how much we actually submitted */
-  r->rtn = vorbis_analysis_wrote(r->vd, i);
-}
+    Handle<Value> argv[1] = { NanNew<Integer>(rtn) };
 
-void node_vorbis_analysis_write_after (uv_work_t *req) {
-  HandleScope scope;
-  write_req *r = reinterpret_cast<write_req *>(req->data);
-
-  Handle<Value> argv[1] = { Integer::New(r->rtn) };
-
-  TryCatch try_catch;
-  r->callback->Call(Context::GetCurrent()->Global(), 1, argv);
-
-  // cleanup
-  r->callback.Dispose();
-  delete r;
-
-  if (try_catch.HasCaught()) {
-    FatalException(try_catch);
+    callback->Call(1, argv);
   }
-}
+ private:
+  vorbis_dsp_state *vd;
+  float *buffer;
+  int channels;
+  long samples;
+  int rtn;
+};
 
+NAN_METHOD(node_vorbis_analysis_write) {
+  NanScope();
+
+  vorbis_dsp_state *vd = UnwrapPointer<vorbis_dsp_state *>(args[0]);
+  float *buffer = UnwrapPointer<float *>(args[1]);
+  int channels = args[2]->IntegerValue();
+  long samples = args[3]->NumberValue();
+  NanCallback *callback = new NanCallback(args[4].As<Function>());
+
+  NanAsyncQueueWorker(new AnalysisWriteWorker(vd, buffer, channels, samples, callback));
+  NanReturnUndefined();
+}
 
 /* vorbis_analysis_blockout() on the thread pool */
-Handle<Value> node_vorbis_analysis_blockout (const Arguments& args) {
-  HandleScope scope;
-  Local<Function> callback = Local<Function>::Cast(args[2]);
-
-  blockout_req *r = new blockout_req;
-  r->vd = UnwrapPointer<vorbis_dsp_state *>(args[0]);
-  r->vb = UnwrapPointer<vorbis_block *>(args[1]);
-  r->callback = Persistent<Function>::New(callback);
-  r->rtn = 0;
-  r->req.data = r;
-
-  uv_queue_work(uv_default_loop(),
-                &r->req,
-                node_vorbis_analysis_blockout_async,
-                (uv_after_work_cb)node_vorbis_analysis_blockout_after);
-  return Undefined();
-}
-
-void node_vorbis_analysis_blockout_async (uv_work_t *req) {
-  blockout_req *r = reinterpret_cast<blockout_req *>(req->data);
-  r->rtn = vorbis_analysis_blockout(r->vd, r->vb);
-}
-
-void node_vorbis_analysis_blockout_after (uv_work_t *req) {
-  HandleScope scope;
-  blockout_req *r = reinterpret_cast<blockout_req *>(req->data);
-
-  Handle<Value> argv[1] = { Integer::New(r->rtn) };
-
-  TryCatch try_catch;
-  r->callback->Call(Context::GetCurrent()->Global(), 1, argv);
-
-  // cleanup
-  r->callback.Dispose();
-  delete r;
-
-  if (try_catch.HasCaught()) {
-    FatalException(try_catch);
+class AnalysisBlockoutWorker : public NanAsyncWorker {
+ public:
+  AnalysisBlockoutWorker(vorbis_dsp_state *vd, vorbis_block *vb, NanCallback *callback)
+    : vd(vd), vb(vb), rtn(0), NanAsyncWorker(callback) { }
+  ~AnalysisBlockoutWorker() { }
+  void Execute () {
+    rtn = vorbis_analysis_blockout(vd, vb);
   }
+  void HandleOKCallback () {
+    NanScope();
+
+    Handle<Value> argv[1] = { NanNew<Integer>(rtn) };
+
+    callback->Call(1, argv);
+  }
+ private:
+  vorbis_dsp_state *vd;
+  vorbis_block *vb;
+  int rtn;
+};
+
+NAN_METHOD(node_vorbis_analysis_blockout) {
+  NanScope();
+
+  vorbis_dsp_state *vd = UnwrapPointer<vorbis_dsp_state *>(args[0]);
+  vorbis_block *vb = UnwrapPointer<vorbis_block *>(args[1]);
+  NanCallback *callback = new NanCallback(args[2].As<Function>());
+
+  NanAsyncQueueWorker(new AnalysisBlockoutWorker(vd, vb, callback));
+  NanReturnUndefined();
 }
 
 /* TODO: async? */
-Handle<Value> node_vorbis_analysis_eos (const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(node_vorbis_analysis_eos) {
+  NanScope();
   vorbis_dsp_state *vd = UnwrapPointer<vorbis_dsp_state *>(args[0]);
 
   int i = vorbis_analysis_wrote(vd, 0);
-  return scope.Close(Integer::New(i));
+  NanReturnValue(NanNew<Integer>(i));
 }
 
 /* TODO: async? */
-Handle<Value> node_vorbis_analysis (const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(node_vorbis_analysis) {
+  NanScope();
   vorbis_block *vb = UnwrapPointer<vorbis_block *>(args[0]);
   ogg_packet *op = UnwrapPointer<ogg_packet *>(args[1]);
 
   int i = vorbis_analysis(vb, op);
-  return scope.Close(Integer::New(i));
+  NanReturnValue(NanNew<Integer>(i));
 }
 
 /* TODO: async? */
-Handle<Value> node_vorbis_bitrate_addblock (const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(node_vorbis_bitrate_addblock) {
+  NanScope();
   vorbis_block *vb = UnwrapPointer<vorbis_block *>(args[0]);
 
   int i = vorbis_bitrate_addblock(vb);
-  return scope.Close(Integer::New(i));
+  NanReturnValue(NanNew<Integer>(i));
 }
 
 
 /* vorbis_bitrate_flushpacket() on the thread pool */
-Handle<Value> node_vorbis_bitrate_flushpacket (const Arguments& args) {
-  HandleScope scope;
-  Local<Function> callback = Local<Function>::Cast(args[2]);
-
-  flushpacket_req *r = new flushpacket_req;
-  r->vd = UnwrapPointer<vorbis_dsp_state *>(args[0]);
-  r->op = UnwrapPointer<ogg_packet *>(args[1]);
-  r->callback = Persistent<Function>::New(callback);
-  r->rtn = 0;
-  r->req.data = r;
-
-  uv_queue_work(uv_default_loop(),
-                &r->req,
-                node_vorbis_bitrate_flushpacket_async,
-                (uv_after_work_cb)node_vorbis_bitrate_flushpacket_after);
-  return Undefined();
-}
-
-void node_vorbis_bitrate_flushpacket_async (uv_work_t *req) {
-  flushpacket_req *r = reinterpret_cast<flushpacket_req *>(req->data);
-  r->rtn = vorbis_bitrate_flushpacket(r->vd, r->op);
-}
-
-void node_vorbis_bitrate_flushpacket_after (uv_work_t *req) {
-  HandleScope scope;
-  flushpacket_req *r = reinterpret_cast<flushpacket_req *>(req->data);
-
-  Handle<Value> argv[1] = { Integer::New(r->rtn) };
-
-  TryCatch try_catch;
-  r->callback->Call(Context::GetCurrent()->Global(), 1, argv);
-
-  // cleanup
-  r->callback.Dispose();
-  delete r;
-
-  if (try_catch.HasCaught()) {
-    FatalException(try_catch);
+class BitrateFlushpacketWorker : public NanAsyncWorker {
+ public:
+  BitrateFlushpacketWorker(vorbis_dsp_state *vd, ogg_packet *op, NanCallback *callback)
+    : vd(vd), op(op), rtn(0), NanAsyncWorker(callback) { }
+  ~BitrateFlushpacketWorker() { }
+  void Execute () {
+    rtn = vorbis_bitrate_flushpacket(vd, op);
   }
+  void HandleOKCallback () {
+    NanScope();
+
+    Handle<Value> argv[1] = { NanNew<Integer>(rtn) };
+
+    callback->Call(1, argv);
+  }
+ private:
+  vorbis_dsp_state *vd;
+  ogg_packet *op;
+  int rtn;
+};
+
+NAN_METHOD(node_vorbis_bitrate_flushpacket) {
+  NanScope();
+
+  vorbis_dsp_state *vd = UnwrapPointer<vorbis_dsp_state *>(args[0]);
+  ogg_packet *op = UnwrapPointer<ogg_packet *>(args[1]);
+  NanCallback *callback = new NanCallback(args[2].As<Function>());
+
+  NanAsyncQueueWorker(new BitrateFlushpacketWorker(vd, op, callback));
+  NanReturnUndefined();
 }
 
 
 /* vorbis_synthesis_idheader() called on the thread pool */
-Handle<Value> node_vorbis_synthesis_idheader (const Arguments& args) {
-  HandleScope scope;
-  Local<Function> callback = Local<Function>::Cast(args[1]);
-
-  idheader_req *r = new idheader_req;
-  r->op = UnwrapPointer<ogg_packet *>(args[0]);
-  r->callback = Persistent<Function>::New(callback);
-  r->rtn = 0;
-  r->req.data = r;
-
-  uv_queue_work(uv_default_loop(),
-                &r->req,
-                node_vorbis_synthesis_idheader_async,
-                (uv_after_work_cb)node_vorbis_synthesis_idheader_after);
-  return Undefined();
-}
-
-void node_vorbis_synthesis_idheader_async (uv_work_t *req) {
-  idheader_req *r = reinterpret_cast<idheader_req *>(req->data);
-  r->rtn = vorbis_synthesis_idheader(r->op);
-}
-
-void node_vorbis_synthesis_idheader_after (uv_work_t *req) {
-  HandleScope scope;
-  idheader_req *r = reinterpret_cast<idheader_req *>(req->data);
-
-  Handle<Value> argv[] = { Null(), Boolean::New(r->rtn) };
-
-  TryCatch try_catch;
-  r->callback->Call(Context::GetCurrent()->Global(), 2, argv);
-
-  // cleanup
-  r->callback.Dispose();
-  delete r;
-
-  if (try_catch.HasCaught()) {
-    FatalException(try_catch);
+class SynthesisIdheaderWorker : public NanAsyncWorker {
+ public:
+  SynthesisIdheaderWorker(ogg_packet *op, NanCallback *callback)
+    : op(op), rtn(0), NanAsyncWorker(callback) { }
+  ~SynthesisIdheaderWorker() { }
+  void Execute () {
+    rtn = vorbis_synthesis_idheader(op);
   }
+  void HandleOKCallback () {
+    NanScope();
+
+    Handle<Value> argv[] = { NanNull(), NanNew<Boolean>(rtn) };
+
+    callback->Call(2, argv);
+  }
+ private:
+  ogg_packet *op;
+  int rtn;
+};
+
+NAN_METHOD(node_vorbis_synthesis_idheader) {
+  NanScope();
+
+  ogg_packet *op = UnwrapPointer<ogg_packet *>(args[0]);
+  NanCallback *callback = new NanCallback(args[1].As<Function>());
+
+  NanAsyncQueueWorker(new SynthesisIdheaderWorker(op, callback));
+  NanReturnUndefined();
 }
 
 
 /* vorbis_synthesis_headerin() called on the thread pool */
-Handle<Value> node_vorbis_synthesis_headerin (const Arguments& args) {
-  HandleScope scope;
-  Local<Function> callback = Local<Function>::Cast(args[3]);
-
-  headerin_req *r = new headerin_req;
-  r->vi = UnwrapPointer<vorbis_info *>(args[0]);
-  r->vc = UnwrapPointer<vorbis_comment *>(args[1]);
-  r->op = UnwrapPointer<ogg_packet *>(args[2]);
-  r->rtn = 0;
-  r->callback = Persistent<Function>::New(callback);
-  r->req.data = r;
-
-  uv_queue_work(uv_default_loop(),
-                &r->req,
-                node_vorbis_synthesis_headerin_async,
-                (uv_after_work_cb)node_vorbis_synthesis_headerin_after);
-  return Undefined();
-}
-
-void node_vorbis_synthesis_headerin_async (uv_work_t *req) {
-  headerin_req *r = reinterpret_cast<headerin_req *>(req->data);
-  r->rtn = vorbis_synthesis_headerin(r->vi, r->vc, r->op);
-}
-
-void node_vorbis_synthesis_headerin_after (uv_work_t *req) {
-  HandleScope scope;
-  headerin_req *r = reinterpret_cast<headerin_req *>(req->data);
-
-  Handle<Value> argv[1] = { Integer::New(r->rtn) };
-
-  TryCatch try_catch;
-  r->callback->Call(Context::GetCurrent()->Global(), 1, argv);
-
-  // cleanup
-  r->callback.Dispose();
-  delete r;
-
-  if (try_catch.HasCaught()) {
-    FatalException(try_catch);
+class SynthesisHeaderinWorker : public NanAsyncWorker {
+ public:
+  SynthesisHeaderinWorker(vorbis_info *vi, vorbis_comment *vc, ogg_packet *op, NanCallback *callback)
+    : vi(vi), vc(vc), op(op), rtn(0), NanAsyncWorker(callback) { }
+  ~SynthesisHeaderinWorker() { }
+  void Execute () {
+      rtn = vorbis_synthesis_headerin(vi, vc, op);
   }
+  void HandleOKCallback () {
+    NanScope();
+
+    Handle<Value> argv[1] = { NanNew<Integer>(rtn) };
+
+    callback->Call(1, argv);
+  }
+ private:
+  vorbis_info *vi;
+  vorbis_comment *vc;
+  ogg_packet *op;
+  int rtn;
+};
+NAN_METHOD(node_vorbis_synthesis_headerin) {
+  NanScope();
+
+  vorbis_info *vi = UnwrapPointer<vorbis_info *>(args[0]);
+  vorbis_comment *vc = UnwrapPointer<vorbis_comment *>(args[1]);
+  ogg_packet *op = UnwrapPointer<ogg_packet *>(args[2]);
+  NanCallback *callback = new NanCallback(args[3].As<Function>());
+
+  NanAsyncQueueWorker(new SynthesisHeaderinWorker(vi, vc, op, callback));
+  NanReturnUndefined();
 }
+
 
 
 /* TODO: async */
-Handle<Value> node_vorbis_synthesis (const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(node_vorbis_synthesis) {
+  NanScope();
   vorbis_block *vb = UnwrapPointer<vorbis_block *>(args[0]);
   ogg_packet *op = UnwrapPointer<ogg_packet *>(args[1]);
 
   int i = vorbis_synthesis(vb, op);
-  return scope.Close(Integer::New(i));
+  NanReturnValue(NanNew<Integer>(i));
 }
 
 
 /* TODO: async */
-Handle<Value> node_vorbis_synthesis_blockin (const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(node_vorbis_synthesis_blockin) {
+  NanScope();
   vorbis_dsp_state *vd = UnwrapPointer<vorbis_dsp_state *>(args[0]);
   vorbis_block *vb = UnwrapPointer<vorbis_block *>(args[1]);
 
   int i = vorbis_synthesis_blockin(vd, vb);
-  return scope.Close(Integer::New(i));
+  NanReturnValue(NanNew<Integer>(i));
 }
 
 
 /* TODO: async */
-Handle<Value> node_vorbis_synthesis_pcmout (const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(node_vorbis_synthesis_pcmout) {
+  NanScope();
   float **pcm;
   int samples;
   Handle<Value> rtn;
@@ -438,7 +392,7 @@ Handle<Value> node_vorbis_synthesis_pcmout (const Arguments& args) {
 
   if (samples > 0) {
     /* we need to interlace the pcm float data... */
-    Buffer *buffer = Buffer::New(samples * channels * sizeof(float));
+    Local<Object> buffer = NanNewBufferHandle(samples * channels * sizeof(float));
     float *buf = reinterpret_cast<float *>(Buffer::Data(buffer));
     int i, j;
     for (i = 0; i < channels; i++) {
@@ -450,22 +404,22 @@ Handle<Value> node_vorbis_synthesis_pcmout (const Arguments& args) {
       }
     }
     vorbis_synthesis_read(vd, samples);
-    rtn = buffer->handle_;
+    rtn = buffer;
   } else {
     /* an error or 0 samples */
-    rtn = Integer::New(samples);
+    rtn = NanNew<Integer>(samples);
   }
 
-  return scope.Close(rtn);
+  NanReturnValue(rtn);
 }
 
 
 void Initialize(Handle<Object> target) {
-  HandleScope scope;
+  NanScope();
 
   /* sizeof's */
 #define SIZEOF(value) \
-  target->Set(String::NewSymbol("sizeof_" #value), Integer::New(sizeof(value)), \
+  target->ForceSet(NanNew<String>("sizeof_" #value), NanNew<Integer>(static_cast<int32_t>(sizeof(value))), \
       static_cast<PropertyAttribute>(ReadOnly|DontDelete))
   SIZEOF(vorbis_info);
   SIZEOF(vorbis_comment);
@@ -475,7 +429,7 @@ void Initialize(Handle<Object> target) {
 
   /* contants */
 #define CONST(value) \
-  target->Set(String::NewSymbol(#value), Integer::New(value), \
+  target->ForceSet(NanNew<String>(#value), NanNew<Integer>(value), \
       static_cast<PropertyAttribute>(ReadOnly|DontDelete))
   CONST(OV_FALSE);
   CONST(OV_EOF);
@@ -517,7 +471,7 @@ void Initialize(Handle<Object> target) {
   NODE_SET_METHOD(target, "comment_array", node_comment_array);
   NODE_SET_METHOD(target, "get_format", node_get_format);
 
-  target->Set(String::NewSymbol("version"), String::New(vorbis_version_string()),
+  target->ForceSet(NanNew<String>("version"), NanNew<String>(vorbis_version_string()),
     static_cast<PropertyAttribute>(ReadOnly|DontDelete));
 }
 
