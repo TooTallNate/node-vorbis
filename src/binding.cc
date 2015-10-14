@@ -37,116 +37,114 @@ namespace nodevorbis {
 
 
 NAN_METHOD(node_vorbis_info_init) {
-  NanScope();
-  vorbis_info *vi = UnwrapPointer<vorbis_info *>(args[0]);
+  Nan::HandleScope scope;
+  vorbis_info *vi = UnwrapPointer<vorbis_info *>(info[0]);
   vorbis_info_init(vi);
-  NanReturnUndefined();
 }
 
 
 NAN_METHOD(node_vorbis_comment_init) {
-  NanScope();
-  vorbis_comment *vc = UnwrapPointer<vorbis_comment *>(args[0]);
+  Nan::HandleScope scope;
+  vorbis_comment *vc = UnwrapPointer<vorbis_comment *>(info[0]);
   vorbis_comment_init(vc);
-  NanReturnUndefined();
 }
 
 
 NAN_METHOD(node_vorbis_synthesis_init) {
-  NanScope();
-  vorbis_dsp_state *vd = UnwrapPointer<vorbis_dsp_state *>(args[0]);
-  vorbis_info *vi = UnwrapPointer<vorbis_info *>(args[1]);
+  Nan::HandleScope scope;
+  vorbis_dsp_state *vd = UnwrapPointer<vorbis_dsp_state *>(info[0]);
+  vorbis_info *vi = UnwrapPointer<vorbis_info *>(info[1]);
   int r = vorbis_synthesis_init(vd, vi);
-  NanReturnValue(NanNew<Integer>(r));
+  info.GetReturnValue().Set(Nan::New<Integer>(r));
 }
 
 
 NAN_METHOD(node_vorbis_analysis_init) {
-  NanScope();
-  vorbis_dsp_state *vd = UnwrapPointer<vorbis_dsp_state *>(args[0]);
-  vorbis_info *vi = UnwrapPointer<vorbis_info *>(args[1]);
+  Nan::HandleScope scope;
+  vorbis_dsp_state *vd = UnwrapPointer<vorbis_dsp_state *>(info[0]);
+  vorbis_info *vi = UnwrapPointer<vorbis_info *>(info[1]);
   int r = vorbis_analysis_init(vd, vi);
-  NanReturnValue(NanNew<Integer>(r));
+  info.GetReturnValue().Set(Nan::New<Integer>(r));
 }
 
 
 NAN_METHOD(node_vorbis_block_init) {
-  NanScope();
-  vorbis_dsp_state *vd = UnwrapPointer<vorbis_dsp_state *>(args[0]);
-  vorbis_block *vb = UnwrapPointer<vorbis_block *>(args[1]);
+  Nan::HandleScope scope;
+  vorbis_dsp_state *vd = UnwrapPointer<vorbis_dsp_state *>(info[0]);
+  vorbis_block *vb = UnwrapPointer<vorbis_block *>(info[1]);
   int r = vorbis_block_init(vd, vb);
-  NanReturnValue(NanNew<Integer>(r));
+  info.GetReturnValue().Set(Nan::New<Integer>(r));
 }
 
 
 NAN_METHOD(node_vorbis_encode_init_vbr) {
-  NanScope();
-  vorbis_info *vi = UnwrapPointer<vorbis_info *>(args[0]);
-  long channels = args[1]->IntegerValue();
-  long rate = args[2]->IntegerValue();
-  float quality = args[3]->NumberValue();
+  Nan::HandleScope scope;
+  vorbis_info *vi = UnwrapPointer<vorbis_info *>(info[0]);
+  long channels = info[1]->IntegerValue();
+  long rate = info[2]->IntegerValue();
+  float quality = info[3]->NumberValue();
   int r = vorbis_encode_init_vbr(vi, channels, rate, quality);
-  NanReturnValue(NanNew<Integer>(r));
+  info.GetReturnValue().Set(Nan::New<Integer>(r));
 }
 
 
 NAN_METHOD(node_comment_array) {
-  NanScope();
+  Nan::HandleScope scope;
   int i;
-  vorbis_comment *vc = UnwrapPointer<vorbis_comment *>(args[0]);
-  Local<Array> array = NanNew<Array>(vc->comments);
+  vorbis_comment *vc = UnwrapPointer<vorbis_comment *>(info[0]);
+  Local<Array> array = Nan::New<Array>(vc->comments);
   for (i = 0; i < vc->comments; i++) {
-    array->Set(i, NanNew<String>(vc->user_comments[i], vc->comment_lengths[i]));
+    Nan::Set(array, i, Nan::New<String>(vc->user_comments[i], vc->comment_lengths[i]).ToLocalChecked());
   }
-  array->Set(NanNew<String>("vendor"), NanNew<String>(vc->vendor));
-  NanReturnValue(array);
+  Nan::Set(array, Nan::New<String>("vendor").ToLocalChecked(), Nan::New<String>(vc->vendor).ToLocalChecked());
+  info.GetReturnValue().Set(array);
 }
 
 
 NAN_METHOD(node_get_format) {
-  NanScope();
-  vorbis_info *vi = UnwrapPointer<vorbis_info *>(args[0]);
-  Local<Object> format = NanNew<Object>();
+  Nan::HandleScope scope;
+  vorbis_info *vi = UnwrapPointer<vorbis_info *>(info[0]);
+  Local<Object> format = Nan::New<Object>();
 
   /* PCM format properties */
-  format->Set(NanNew<String>("channels"), NanNew<Integer>(vi->channels));
-  format->Set(NanNew<String>("sampleRate"), NanNew<Number>(vi->rate));
-  format->Set(NanNew<String>("bitDepth"), NanNew<Integer>(static_cast<int32_t>(sizeof(float) * 8)));
-  format->Set(NanNew<String>("float"), NanTrue());
-  format->Set(NanNew<String>("signed"), NanTrue());
+  Nan::Set(format, Nan::New<String>("channels").ToLocalChecked() , Nan::New<Integer>(vi->channels));
+  Nan::Set(format, Nan::New<String>("sampleRate").ToLocalChecked(), Nan::New<Number>(vi->rate));
+  Nan::Set(format, Nan::New<String>("bitDepth").ToLocalChecked(), Nan::New<Integer>(static_cast<int32_t>(sizeof(float) * 8)));
+  Nan::Set(format, Nan::New<String>("float").ToLocalChecked(), Nan::True());
+  Nan::Set(format, Nan::New<String>("signed").ToLocalChecked(), Nan::True());
 
   /* Other random info from the vorbis_info struct */
-  format->Set(NanNew<String>("version"), NanNew<Integer>(vi->version));
-  format->Set(NanNew<String>("bitrateUpper"), NanNew<Number>(vi->bitrate_upper));
-  format->Set(NanNew<String>("bitrateNominal"), NanNew<Number>(vi->bitrate_nominal));
-  format->Set(NanNew<String>("bitrateLower"), NanNew<Number>(vi->bitrate_lower));
-  format->Set(NanNew<String>("bitrateWindow"), NanNew<Number>(vi->bitrate_window));
+  Nan::Set(format, Nan::New<String>("version").ToLocalChecked(), Nan::New<Integer>(vi->version));
+  Nan::Set(format, Nan::New<String>("bitrateUpper").ToLocalChecked(), Nan::New<Number>(vi->bitrate_upper));
+  Nan::Set(format, Nan::New<String>("bitrateNominal").ToLocalChecked(), Nan::New<Number>(vi->bitrate_nominal));
+  Nan::Set(format, Nan::New<String>("bitrateLower").ToLocalChecked(), Nan::New<Number>(vi->bitrate_lower));
+  Nan::Set(format, Nan::New<String>("bitrateWindow").ToLocalChecked(), Nan::New<Number>(vi->bitrate_window));
 
-  NanReturnValue(format);
+  info.GetReturnValue().Set(format);
 }
 
 
 /* TODO: async */
 NAN_METHOD(node_vorbis_analysis_headerout) {
-  NanScope();
-  vorbis_dsp_state *vd = UnwrapPointer<vorbis_dsp_state *>(args[0]);
-  vorbis_comment *vc = UnwrapPointer<vorbis_comment *>(args[1]);
-  ogg_packet *op_header = UnwrapPointer<ogg_packet *>(args[2]);
-  ogg_packet *op_comments = UnwrapPointer<ogg_packet *>(args[3]);
-  ogg_packet *op_code = UnwrapPointer<ogg_packet *>(args[4]);
+  Nan::HandleScope scope;
+  vorbis_dsp_state *vd = UnwrapPointer<vorbis_dsp_state *>(info[0]);
+  vorbis_comment *vc = UnwrapPointer<vorbis_comment *>(info[1]);
+  ogg_packet *op_header = UnwrapPointer<ogg_packet *>(info[2]);
+  ogg_packet *op_comments = UnwrapPointer<ogg_packet *>(info[3]);
+  ogg_packet *op_code = UnwrapPointer<ogg_packet *>(info[4]);
   int r = vorbis_analysis_headerout(vd, vc, op_header, op_comments, op_code);
-  NanReturnValue(NanNew<Integer>(r));
+  info.GetReturnValue().Set(Nan::New<Integer>(r));
 }
 
 
 /* combination of `vorbis_analysis_buffer()`, `memcpy()`, and
  * `vorbis_analysis_wrote()` on the thread pool. */
 
-class AnalysisWriteWorker : public NanAsyncWorker {
+class AnalysisWriteWorker : public Nan::AsyncWorker {
  public:
-  AnalysisWriteWorker(vorbis_dsp_state *vd, float *buffer, int channels, long samples, NanCallback *callback)
+  AnalysisWriteWorker(vorbis_dsp_state *vd, float *buffer, int channels, long samples, Nan::Callback *callback)
     : vd(vd), buffer(buffer), channels(channels), samples(samples), rtn(0),
-    NanAsyncWorker(callback) { }
+    Nan::AsyncWorker(callback) { }
   ~AnalysisWriteWorker() { }
   void Execute () {
     /* input samples are interleaved floats */
@@ -166,9 +164,9 @@ class AnalysisWriteWorker : public NanAsyncWorker {
     rtn = vorbis_analysis_wrote(vd, i);
   }
   void HandleOKCallback () {
-    NanScope();
+    Nan::HandleScope scope;
 
-    Handle<Value> argv[1] = { NanNew<Integer>(rtn) };
+    Handle<Value> argv[1] = { Nan::New<Integer>(rtn) };
 
     callback->Call(1, argv);
   }
@@ -181,31 +179,30 @@ class AnalysisWriteWorker : public NanAsyncWorker {
 };
 
 NAN_METHOD(node_vorbis_analysis_write) {
-  NanScope();
+  Nan::HandleScope scope;
 
-  vorbis_dsp_state *vd = UnwrapPointer<vorbis_dsp_state *>(args[0]);
-  float *buffer = UnwrapPointer<float *>(args[1]);
-  int channels = args[2]->IntegerValue();
-  long samples = args[3]->NumberValue();
-  NanCallback *callback = new NanCallback(args[4].As<Function>());
+  vorbis_dsp_state *vd = UnwrapPointer<vorbis_dsp_state *>(info[0]);
+  float *buffer = UnwrapPointer<float *>(info[1]);
+  int channels = info[2]->IntegerValue();
+  long samples = info[3]->NumberValue();
+  Nan::Callback *callback = new Nan::Callback(info[4].As<Function>());
 
-  NanAsyncQueueWorker(new AnalysisWriteWorker(vd, buffer, channels, samples, callback));
-  NanReturnUndefined();
+  Nan::AsyncQueueWorker(new AnalysisWriteWorker(vd, buffer, channels, samples, callback));
 }
 
 /* vorbis_analysis_blockout() on the thread pool */
-class AnalysisBlockoutWorker : public NanAsyncWorker {
+class AnalysisBlockoutWorker : public Nan::AsyncWorker {
  public:
-  AnalysisBlockoutWorker(vorbis_dsp_state *vd, vorbis_block *vb, NanCallback *callback)
-    : vd(vd), vb(vb), rtn(0), NanAsyncWorker(callback) { }
+  AnalysisBlockoutWorker(vorbis_dsp_state *vd, vorbis_block *vb, Nan::Callback *callback)
+    : vd(vd), vb(vb), rtn(0), Nan::AsyncWorker(callback) { }
   ~AnalysisBlockoutWorker() { }
   void Execute () {
     rtn = vorbis_analysis_blockout(vd, vb);
   }
   void HandleOKCallback () {
-    NanScope();
+    Nan::HandleScope scope;
 
-    Handle<Value> argv[1] = { NanNew<Integer>(rtn) };
+    Handle<Value> argv[1] = { Nan::New<Integer>(rtn) };
 
     callback->Call(1, argv);
   }
@@ -216,58 +213,57 @@ class AnalysisBlockoutWorker : public NanAsyncWorker {
 };
 
 NAN_METHOD(node_vorbis_analysis_blockout) {
-  NanScope();
+  Nan::HandleScope scope;
 
-  vorbis_dsp_state *vd = UnwrapPointer<vorbis_dsp_state *>(args[0]);
-  vorbis_block *vb = UnwrapPointer<vorbis_block *>(args[1]);
-  NanCallback *callback = new NanCallback(args[2].As<Function>());
+  vorbis_dsp_state *vd = UnwrapPointer<vorbis_dsp_state *>(info[0]);
+  vorbis_block *vb = UnwrapPointer<vorbis_block *>(info[1]);
+  Nan::Callback *callback = new Nan::Callback(info[2].As<Function>());
 
-  NanAsyncQueueWorker(new AnalysisBlockoutWorker(vd, vb, callback));
-  NanReturnUndefined();
+  Nan::AsyncQueueWorker(new AnalysisBlockoutWorker(vd, vb, callback));
 }
 
 /* TODO: async? */
 NAN_METHOD(node_vorbis_analysis_eos) {
-  NanScope();
-  vorbis_dsp_state *vd = UnwrapPointer<vorbis_dsp_state *>(args[0]);
+  Nan::HandleScope scope;
+  vorbis_dsp_state *vd = UnwrapPointer<vorbis_dsp_state *>(info[0]);
 
   int i = vorbis_analysis_wrote(vd, 0);
-  NanReturnValue(NanNew<Integer>(i));
+  info.GetReturnValue().Set(Nan::New<Integer>(i));
 }
 
 /* TODO: async? */
 NAN_METHOD(node_vorbis_analysis) {
-  NanScope();
-  vorbis_block *vb = UnwrapPointer<vorbis_block *>(args[0]);
-  ogg_packet *op = UnwrapPointer<ogg_packet *>(args[1]);
+  Nan::HandleScope scope;
+  vorbis_block *vb = UnwrapPointer<vorbis_block *>(info[0]);
+  ogg_packet *op = UnwrapPointer<ogg_packet *>(info[1]);
 
   int i = vorbis_analysis(vb, op);
-  NanReturnValue(NanNew<Integer>(i));
+  info.GetReturnValue().Set(Nan::New<Integer>(i));
 }
 
 /* TODO: async? */
 NAN_METHOD(node_vorbis_bitrate_addblock) {
-  NanScope();
-  vorbis_block *vb = UnwrapPointer<vorbis_block *>(args[0]);
+  Nan::HandleScope scope;
+  vorbis_block *vb = UnwrapPointer<vorbis_block *>(info[0]);
 
   int i = vorbis_bitrate_addblock(vb);
-  NanReturnValue(NanNew<Integer>(i));
+  info.GetReturnValue().Set(Nan::New<Integer>(i));
 }
 
 
 /* vorbis_bitrate_flushpacket() on the thread pool */
-class BitrateFlushpacketWorker : public NanAsyncWorker {
+class BitrateFlushpacketWorker : public Nan::AsyncWorker {
  public:
-  BitrateFlushpacketWorker(vorbis_dsp_state *vd, ogg_packet *op, NanCallback *callback)
-    : vd(vd), op(op), rtn(0), NanAsyncWorker(callback) { }
+  BitrateFlushpacketWorker(vorbis_dsp_state *vd, ogg_packet *op, Nan::Callback *callback)
+    : vd(vd), op(op), rtn(0), Nan::AsyncWorker(callback) { }
   ~BitrateFlushpacketWorker() { }
   void Execute () {
     rtn = vorbis_bitrate_flushpacket(vd, op);
   }
   void HandleOKCallback () {
-    NanScope();
+    Nan::HandleScope scope;
 
-    Handle<Value> argv[1] = { NanNew<Integer>(rtn) };
+    Handle<Value> argv[1] = { Nan::New<Integer>(rtn) };
 
     callback->Call(1, argv);
   }
@@ -278,30 +274,29 @@ class BitrateFlushpacketWorker : public NanAsyncWorker {
 };
 
 NAN_METHOD(node_vorbis_bitrate_flushpacket) {
-  NanScope();
+  Nan::HandleScope scope;
 
-  vorbis_dsp_state *vd = UnwrapPointer<vorbis_dsp_state *>(args[0]);
-  ogg_packet *op = UnwrapPointer<ogg_packet *>(args[1]);
-  NanCallback *callback = new NanCallback(args[2].As<Function>());
+  vorbis_dsp_state *vd = UnwrapPointer<vorbis_dsp_state *>(info[0]);
+  ogg_packet *op = UnwrapPointer<ogg_packet *>(info[1]);
+  Nan::Callback *callback = new Nan::Callback(info[2].As<Function>());
 
-  NanAsyncQueueWorker(new BitrateFlushpacketWorker(vd, op, callback));
-  NanReturnUndefined();
+  Nan::AsyncQueueWorker(new BitrateFlushpacketWorker(vd, op, callback));
 }
 
 
 /* vorbis_synthesis_idheader() called on the thread pool */
-class SynthesisIdheaderWorker : public NanAsyncWorker {
+class SynthesisIdheaderWorker : public Nan::AsyncWorker {
  public:
-  SynthesisIdheaderWorker(ogg_packet *op, NanCallback *callback)
-    : op(op), rtn(0), NanAsyncWorker(callback) { }
+  SynthesisIdheaderWorker(ogg_packet *op, Nan::Callback *callback)
+    : op(op), rtn(0), Nan::AsyncWorker(callback) { }
   ~SynthesisIdheaderWorker() { }
   void Execute () {
     rtn = vorbis_synthesis_idheader(op);
   }
   void HandleOKCallback () {
-    NanScope();
+    Nan::HandleScope scope;
 
-    Handle<Value> argv[] = { NanNull(), NanNew<Boolean>(rtn) };
+    Handle<Value> argv[] = { Nan::Null(), Nan::New<Boolean>(rtn) };
 
     callback->Call(2, argv);
   }
@@ -311,29 +306,28 @@ class SynthesisIdheaderWorker : public NanAsyncWorker {
 };
 
 NAN_METHOD(node_vorbis_synthesis_idheader) {
-  NanScope();
+  Nan::HandleScope scope;
 
-  ogg_packet *op = UnwrapPointer<ogg_packet *>(args[0]);
-  NanCallback *callback = new NanCallback(args[1].As<Function>());
+  ogg_packet *op = UnwrapPointer<ogg_packet *>(info[0]);
+  Nan::Callback *callback = new Nan::Callback(info[1].As<Function>());
 
-  NanAsyncQueueWorker(new SynthesisIdheaderWorker(op, callback));
-  NanReturnUndefined();
+  Nan::AsyncQueueWorker(new SynthesisIdheaderWorker(op, callback));
 }
 
 
 /* vorbis_synthesis_headerin() called on the thread pool */
-class SynthesisHeaderinWorker : public NanAsyncWorker {
+class SynthesisHeaderinWorker : public Nan::AsyncWorker {
  public:
-  SynthesisHeaderinWorker(vorbis_info *vi, vorbis_comment *vc, ogg_packet *op, NanCallback *callback)
-    : vi(vi), vc(vc), op(op), rtn(0), NanAsyncWorker(callback) { }
+  SynthesisHeaderinWorker(vorbis_info *vi, vorbis_comment *vc, ogg_packet *op, Nan::Callback *callback)
+    : vi(vi), vc(vc), op(op), rtn(0), Nan::AsyncWorker(callback) { }
   ~SynthesisHeaderinWorker() { }
   void Execute () {
       rtn = vorbis_synthesis_headerin(vi, vc, op);
   }
   void HandleOKCallback () {
-    NanScope();
+    Nan::HandleScope scope;
 
-    Handle<Value> argv[1] = { NanNew<Integer>(rtn) };
+    Handle<Value> argv[1] = { Nan::New<Integer>(rtn) };
 
     callback->Call(1, argv);
   }
@@ -344,56 +338,55 @@ class SynthesisHeaderinWorker : public NanAsyncWorker {
   int rtn;
 };
 NAN_METHOD(node_vorbis_synthesis_headerin) {
-  NanScope();
+  Nan::HandleScope scope;
 
-  vorbis_info *vi = UnwrapPointer<vorbis_info *>(args[0]);
-  vorbis_comment *vc = UnwrapPointer<vorbis_comment *>(args[1]);
-  ogg_packet *op = UnwrapPointer<ogg_packet *>(args[2]);
-  NanCallback *callback = new NanCallback(args[3].As<Function>());
+  vorbis_info *vi = UnwrapPointer<vorbis_info *>(info[0]);
+  vorbis_comment *vc = UnwrapPointer<vorbis_comment *>(info[1]);
+  ogg_packet *op = UnwrapPointer<ogg_packet *>(info[2]);
+  Nan::Callback *callback = new Nan::Callback(info[3].As<Function>());
 
-  NanAsyncQueueWorker(new SynthesisHeaderinWorker(vi, vc, op, callback));
-  NanReturnUndefined();
+  Nan::AsyncQueueWorker(new SynthesisHeaderinWorker(vi, vc, op, callback));
 }
 
 
 
 /* TODO: async */
 NAN_METHOD(node_vorbis_synthesis) {
-  NanScope();
-  vorbis_block *vb = UnwrapPointer<vorbis_block *>(args[0]);
-  ogg_packet *op = UnwrapPointer<ogg_packet *>(args[1]);
+  Nan::HandleScope scope;
+  vorbis_block *vb = UnwrapPointer<vorbis_block *>(info[0]);
+  ogg_packet *op = UnwrapPointer<ogg_packet *>(info[1]);
 
   int i = vorbis_synthesis(vb, op);
-  NanReturnValue(NanNew<Integer>(i));
+  info.GetReturnValue().Set(Nan::New<Integer>(i));
 }
 
 
 /* TODO: async */
 NAN_METHOD(node_vorbis_synthesis_blockin) {
-  NanScope();
-  vorbis_dsp_state *vd = UnwrapPointer<vorbis_dsp_state *>(args[0]);
-  vorbis_block *vb = UnwrapPointer<vorbis_block *>(args[1]);
+  Nan::HandleScope scope;
+  vorbis_dsp_state *vd = UnwrapPointer<vorbis_dsp_state *>(info[0]);
+  vorbis_block *vb = UnwrapPointer<vorbis_block *>(info[1]);
 
   int i = vorbis_synthesis_blockin(vd, vb);
-  NanReturnValue(NanNew<Integer>(i));
+  info.GetReturnValue().Set(Nan::New<Integer>(i));
 }
 
 
 /* TODO: async */
 NAN_METHOD(node_vorbis_synthesis_pcmout) {
-  NanScope();
+  Nan::HandleScope scope;
   float **pcm;
   int samples;
   Handle<Value> rtn;
-  vorbis_dsp_state *vd = UnwrapPointer<vorbis_dsp_state *>(args[0]);
-  int channels = args[1]->Int32Value();
+  vorbis_dsp_state *vd = UnwrapPointer<vorbis_dsp_state *>(info[0]);
+  int channels = info[1]->Int32Value();
 
   samples = vorbis_synthesis_pcmout(vd, &pcm);
 
   if (samples > 0) {
     /* we need to interlace the pcm float data... */
-    Local<Object> buffer = NanNewBufferHandle(samples * channels * sizeof(float));
-    float *buf = reinterpret_cast<float *>(Buffer::Data(buffer));
+    Nan::MaybeLocal<Object> buffer = Nan::NewBuffer(samples * channels * sizeof(float));
+    float *buf = reinterpret_cast<float *>(Buffer::Data(buffer.ToLocalChecked()));
     int i, j;
     for (i = 0; i < channels; i++) {
       float *ptr = buf + i;
@@ -404,22 +397,22 @@ NAN_METHOD(node_vorbis_synthesis_pcmout) {
       }
     }
     vorbis_synthesis_read(vd, samples);
-    rtn = buffer;
+    rtn = buffer.ToLocalChecked();
   } else {
     /* an error or 0 samples */
-    rtn = NanNew<Integer>(samples);
+    rtn = Nan::New<Integer>(samples);
   }
 
-  NanReturnValue(rtn);
+  info.GetReturnValue().Set(rtn);
 }
 
 
 void Initialize(Handle<Object> target) {
-  NanScope();
+  Nan::HandleScope scope;
 
   /* sizeof's */
 #define SIZEOF(value) \
-  target->ForceSet(NanNew<String>("sizeof_" #value), NanNew<Integer>(static_cast<int32_t>(sizeof(value))), \
+  Nan::ForceSet(target, Nan::New<String>("sizeof_" #value).ToLocalChecked(), Nan::New<Integer>(static_cast<int32_t>(sizeof(value))), \
       static_cast<PropertyAttribute>(ReadOnly|DontDelete))
   SIZEOF(vorbis_info);
   SIZEOF(vorbis_comment);
@@ -429,7 +422,7 @@ void Initialize(Handle<Object> target) {
 
   /* contants */
 #define CONST(value) \
-  target->ForceSet(NanNew<String>(#value), NanNew<Integer>(value), \
+  Nan::ForceSet(target, Nan::New<String>(#value).ToLocalChecked(), Nan::New<Integer>(value), \
       static_cast<PropertyAttribute>(ReadOnly|DontDelete))
   CONST(OV_FALSE);
   CONST(OV_EOF);
@@ -448,30 +441,30 @@ void Initialize(Handle<Object> target) {
   CONST(OV_ENOSEEK);
 
   /* functions */
-  NODE_SET_METHOD(target, "vorbis_info_init", node_vorbis_info_init);
-  NODE_SET_METHOD(target, "vorbis_comment_init", node_vorbis_comment_init);
-  NODE_SET_METHOD(target, "vorbis_synthesis_init", node_vorbis_synthesis_init);
-  NODE_SET_METHOD(target, "vorbis_analysis_init", node_vorbis_analysis_init);
-  NODE_SET_METHOD(target, "vorbis_block_init", node_vorbis_block_init);
-  NODE_SET_METHOD(target, "vorbis_encode_init_vbr", node_vorbis_encode_init_vbr);
-  NODE_SET_METHOD(target, "vorbis_analysis_headerout", node_vorbis_analysis_headerout);
-  NODE_SET_METHOD(target, "vorbis_analysis_write", node_vorbis_analysis_write);
-  NODE_SET_METHOD(target, "vorbis_analysis_blockout", node_vorbis_analysis_blockout);
-  NODE_SET_METHOD(target, "vorbis_analysis_eos", node_vorbis_analysis_eos);
-  NODE_SET_METHOD(target, "vorbis_analysis", node_vorbis_analysis);
-  NODE_SET_METHOD(target, "vorbis_bitrate_addblock", node_vorbis_bitrate_addblock);
-  NODE_SET_METHOD(target, "vorbis_bitrate_flushpacket", node_vorbis_bitrate_flushpacket);
-  NODE_SET_METHOD(target, "vorbis_synthesis_idheader", node_vorbis_synthesis_idheader);
-  NODE_SET_METHOD(target, "vorbis_synthesis_headerin", node_vorbis_synthesis_headerin);
-  NODE_SET_METHOD(target, "vorbis_synthesis", node_vorbis_synthesis);
-  NODE_SET_METHOD(target, "vorbis_synthesis_blockin", node_vorbis_synthesis_blockin);
-  NODE_SET_METHOD(target, "vorbis_synthesis_pcmout", node_vorbis_synthesis_pcmout);
+  Nan::SetMethod(target, "vorbis_info_init", node_vorbis_info_init);
+  Nan::SetMethod(target, "vorbis_comment_init", node_vorbis_comment_init);
+  Nan::SetMethod(target, "vorbis_synthesis_init", node_vorbis_synthesis_init);
+  Nan::SetMethod(target, "vorbis_analysis_init", node_vorbis_analysis_init);
+  Nan::SetMethod(target, "vorbis_block_init", node_vorbis_block_init);
+  Nan::SetMethod(target, "vorbis_encode_init_vbr", node_vorbis_encode_init_vbr);
+  Nan::SetMethod(target, "vorbis_analysis_headerout", node_vorbis_analysis_headerout);
+  Nan::SetMethod(target, "vorbis_analysis_write", node_vorbis_analysis_write);
+  Nan::SetMethod(target, "vorbis_analysis_blockout", node_vorbis_analysis_blockout);
+  Nan::SetMethod(target, "vorbis_analysis_eos", node_vorbis_analysis_eos);
+  Nan::SetMethod(target, "vorbis_analysis", node_vorbis_analysis);
+  Nan::SetMethod(target, "vorbis_bitrate_addblock", node_vorbis_bitrate_addblock);
+  Nan::SetMethod(target, "vorbis_bitrate_flushpacket", node_vorbis_bitrate_flushpacket);
+  Nan::SetMethod(target, "vorbis_synthesis_idheader", node_vorbis_synthesis_idheader);
+  Nan::SetMethod(target, "vorbis_synthesis_headerin", node_vorbis_synthesis_headerin);
+  Nan::SetMethod(target, "vorbis_synthesis", node_vorbis_synthesis);
+  Nan::SetMethod(target, "vorbis_synthesis_blockin", node_vorbis_synthesis_blockin);
+  Nan::SetMethod(target, "vorbis_synthesis_pcmout", node_vorbis_synthesis_pcmout);
 
   /* custom functions */
-  NODE_SET_METHOD(target, "comment_array", node_comment_array);
-  NODE_SET_METHOD(target, "get_format", node_get_format);
+  Nan::SetMethod(target, "comment_array", node_comment_array);
+  Nan::SetMethod(target, "get_format", node_get_format);
 
-  target->ForceSet(NanNew<String>("version"), NanNew<String>(vorbis_version_string()),
+  Nan::ForceSet(target, Nan::New<String>("version").ToLocalChecked(), Nan::New<String>(vorbis_version_string()).ToLocalChecked(),
     static_cast<PropertyAttribute>(ReadOnly|DontDelete));
 }
 
