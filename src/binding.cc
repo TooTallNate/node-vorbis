@@ -166,7 +166,7 @@ class AnalysisWriteWorker : public Nan::AsyncWorker {
   void HandleOKCallback () {
     Nan::HandleScope scope;
 
-    Handle<Value> argv[1] = { Nan::New<Integer>(rtn) };
+    v8::Local<Value> argv[1] = { Nan::New<Integer>(rtn) };
 
     callback->Call(1, argv);
   }
@@ -202,7 +202,7 @@ class AnalysisBlockoutWorker : public Nan::AsyncWorker {
   void HandleOKCallback () {
     Nan::HandleScope scope;
 
-    Handle<Value> argv[1] = { Nan::New<Integer>(rtn) };
+    v8::Local<Value> argv[1] = { Nan::New<Integer>(rtn) };
 
     callback->Call(1, argv);
   }
@@ -263,7 +263,7 @@ class BitrateFlushpacketWorker : public Nan::AsyncWorker {
   void HandleOKCallback () {
     Nan::HandleScope scope;
 
-    Handle<Value> argv[1] = { Nan::New<Integer>(rtn) };
+    v8::Local<Value> argv[1] = { Nan::New<Integer>(rtn) };
 
     callback->Call(1, argv);
   }
@@ -296,7 +296,7 @@ class SynthesisIdheaderWorker : public Nan::AsyncWorker {
   void HandleOKCallback () {
     Nan::HandleScope scope;
 
-    Handle<Value> argv[] = { Nan::Null(), Nan::New<Boolean>(rtn) };
+    v8::Local<Value> argv[] = { Nan::Null(), Nan::New<Boolean>(rtn) };
 
     callback->Call(2, argv);
   }
@@ -327,7 +327,7 @@ class SynthesisHeaderinWorker : public Nan::AsyncWorker {
   void HandleOKCallback () {
     Nan::HandleScope scope;
 
-    Handle<Value> argv[1] = { Nan::New<Integer>(rtn) };
+    v8::Local<Value> argv[1] = { Nan::New<Integer>(rtn) };
 
     callback->Call(1, argv);
   }
@@ -377,7 +377,7 @@ NAN_METHOD(node_vorbis_synthesis_pcmout) {
   Nan::HandleScope scope;
   float **pcm;
   int samples;
-  Handle<Value> rtn;
+  v8::Local<Value> rtn;
   vorbis_dsp_state *vd = UnwrapPointer<vorbis_dsp_state *>(info[0]);
   int channels = info[1]->Int32Value();
 
@@ -407,7 +407,7 @@ NAN_METHOD(node_vorbis_synthesis_pcmout) {
 }
 
 
-void Initialize(Handle<Object> target) {
+void Initialize(v8::Local<Object> target) {
   Nan::HandleScope scope;
 
   /* sizeof's */

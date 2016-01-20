@@ -1,10 +1,8 @@
-
 /*
  * Helper functions for treating node Buffer instances as C "pointers".
  */
 
-#include "v8.h"
-#include "node_buffer.h"
+#include "nan.h"
 
 /*
  * Called when the "pointer" is garbage collected.
@@ -18,7 +16,7 @@ inline static void wrap_pointer_cb(char *data, void *hint) {
  * Wraps "ptr" into a new SlowBuffer instance with size "length".
  */
 
-inline static v8::MaybeLocal<v8::Object> WrapPointer(void *ptr, size_t length) {
+inline static Nan::MaybeLocal<v8::Object> WrapPointer(void *ptr, size_t length) {
   void *user_data = NULL;
   return Nan::NewBuffer((char *)ptr, length, wrap_pointer_cb, user_data);
 }
@@ -27,7 +25,7 @@ inline static v8::MaybeLocal<v8::Object> WrapPointer(void *ptr, size_t length) {
  * Wraps "ptr" into a new SlowBuffer instance with length 0.
  */
 
-inline static v8::MaybeLocal<v8::Object> WrapPointer(void *ptr) {
+inline static Nan::MaybeLocal<v8::Object> WrapPointer(void *ptr) {
   return WrapPointer((char *)ptr, 0);
 }
 
@@ -35,7 +33,7 @@ inline static v8::MaybeLocal<v8::Object> WrapPointer(void *ptr) {
  * Unwraps Buffer instance "buffer" to a C `char *` with the offset specified.
  */
 
-inline static char * UnwrapPointer(v8::Handle<v8::Value> buffer, int64_t offset) {
+inline static char * UnwrapPointer(v8::Local<v8::Value> buffer, int64_t offset) {
   if (node::Buffer::HasInstance(buffer)) {
     return node::Buffer::Data(buffer.As<v8::Object>()) + offset;
   } else {
@@ -48,7 +46,7 @@ inline static char * UnwrapPointer(v8::Handle<v8::Value> buffer, int64_t offset)
  */
 
 
-inline static char * UnwrapPointer(v8::Handle<v8::Value> buffer) {
+inline static char * UnwrapPointer(v8::Local<v8::Value> buffer) {
   if (node::Buffer::HasInstance(buffer)) {
     return node::Buffer::Data(buffer.As<v8::Object>());
   } else {
@@ -62,6 +60,6 @@ inline static char * UnwrapPointer(v8::Handle<v8::Value> buffer) {
  */
 
 template <typename Type>
-inline static Type UnwrapPointer(v8::Handle<v8::Value> buffer) {
+inline static Type UnwrapPointer(v8::Local<v8::Value> buffer) {
   return reinterpret_cast<Type>(UnwrapPointer(buffer));
 }
