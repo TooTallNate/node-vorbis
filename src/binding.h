@@ -10,7 +10,7 @@ struct write_req {
   int channels;
   long samples;
   int rtn;
-  v8::Persistent<v8::Function> callback;
+  NanPersistent<v8::Function> callback;
 };
 
 struct flushpacket_req {
@@ -18,14 +18,14 @@ struct flushpacket_req {
   vorbis_dsp_state *vd;
   ogg_packet *op;
   int rtn;
-  v8::Persistent<v8::Function> callback;
+  NanPersistent<v8::Function> callback;
 };
 
 struct idheader_req {
   uv_work_t req;
   ogg_packet *op;
   int rtn;
-  v8::Persistent<v8::Function> callback;
+  NanPersistent<v8::Function> callback;
 };
 
 struct headerin_req {
@@ -34,7 +34,7 @@ struct headerin_req {
   vorbis_comment *vc;
   ogg_packet *op;
   int rtn;
-  v8::Persistent<v8::Function> callback;
+  NanPersistent<v8::Function> callback;
 };
 
 struct synthesis_req {
@@ -42,7 +42,7 @@ struct synthesis_req {
   vorbis_block *vb;
   ogg_packet *op;
   int rtn;
-  v8::Persistent<v8::Function> callback;
+  NanPersistent<v8::Function> callback;
 };
 
 struct blockin_req {
@@ -50,7 +50,7 @@ struct blockin_req {
   vorbis_dsp_state *vd;
   vorbis_block *vb;
   int rtn;
-  v8::Persistent<v8::Function> callback;
+  NanPersistent<v8::Function> callback;
 };
 
 typedef blockin_req blockout_req;
@@ -61,7 +61,7 @@ struct pcmout_req {
   float *buffer;
   int channels;
   int rtn;
-  v8::Persistent<v8::Function> callback;
+  NanPersistent<v8::Function> callback;
 };
 
 /* Encoding */
