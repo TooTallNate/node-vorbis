@@ -407,7 +407,7 @@ NAN_METHOD(node_vorbis_synthesis_pcmout) {
 }
 
 
-void Initialize(v8::Local<Object> target) {
+NAN_MODULE_INIT(Initialize) {
   Nan::HandleScope scope;
 
   /* sizeof's */
