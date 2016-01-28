@@ -1,6 +1,6 @@
 node-vorbis
 ========
-### NodeJS native binding to libvorbis
+### Node.js native binding to libvorbis
 [![Build Status](https://travis-ci.org/TooTallNate/node-vorbis.svg?branch=master)](https://travis-ci.org/TooTallNate/node-vorbis)
 
 This module provides Vorbis Encoder and Decoder classes compatible with `node-ogg`

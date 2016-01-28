@@ -1,6 +1,6 @@
 {
   "name": "vorbis",
-  "description": "NodeJS native binding to libvorbis",
+  "description": "Node.js native binding to libvorbis",
   "keywords": [
     "ogg",
     "vorbis",
