@@ -20,8 +20,8 @@
   "dependencies": {
     "bindings": "^1.2.0",
     "debug": "^2.2.0",
-    "nan": "^2.1.0",
-    "ogg": "^1.2.4",
+    "nan": "^2.3.5",
+    "ogg": "^1.2.5",
     "readable-stream": "1.0"
   },
   "devDependencies": {
