@@ -1,4 +1,9 @@
 
+0.2.2 / 2016-07-22
+==================
+
+  * lib: fix Vorbis encoder, update Vorbis encoder to latest node.js stream API
+
 0.2.1 / 2016-01-20
 ==================
 
