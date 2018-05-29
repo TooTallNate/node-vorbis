@@ -23,7 +23,7 @@
     "debug": "^2.2.0",
     "nan": "^2.10.0",
     "ogg": "^1.2.5",
-    "readable-stream": "1.0"
+    "readable-stream": "^2.3.6"
   },
   "devDependencies": {
     "mocha": "*"
