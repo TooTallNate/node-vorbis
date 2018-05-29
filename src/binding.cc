@@ -143,8 +143,7 @@ NAN_METHOD(node_vorbis_analysis_headerout) {
 class AnalysisWriteWorker : public Nan::AsyncWorker {
  public:
   AnalysisWriteWorker(vorbis_dsp_state *vd, float *buffer, int channels, long samples, Nan::Callback *callback)
-    : vd(vd), buffer(buffer), channels(channels), samples(samples), rtn(0),
-    Nan::AsyncWorker(callback) { }
+    : Nan::AsyncWorker(callback), vd(vd), buffer(buffer), channels(channels), samples(samples), rtn(0) { }
   ~AnalysisWriteWorker() { }
   void Execute () {
     /* input samples are interleaved floats */
@@ -168,7 +167,7 @@ class AnalysisWriteWorker : public Nan::AsyncWorker {
 
     v8::Local<Value> argv[1] = { Nan::New<Integer>(rtn) };
 
-    callback->Call(1, argv);
+    callback->Call(1, argv, async_resource);
   }
  private:
   vorbis_dsp_state *vd;
@@ -194,7 +193,7 @@ NAN_METHOD(node_vorbis_analysis_write) {
 class AnalysisBlockoutWorker : public Nan::AsyncWorker {
  public:
   AnalysisBlockoutWorker(vorbis_dsp_state *vd, vorbis_block *vb, Nan::Callback *callback)
-    : vd(vd), vb(vb), rtn(0), Nan::AsyncWorker(callback) { }
+    : Nan::AsyncWorker(callback), vd(vd), vb(vb), rtn(0) { }
   ~AnalysisBlockoutWorker() { }
   void Execute () {
     rtn = vorbis_analysis_blockout(vd, vb);
@@ -204,7 +203,7 @@ class AnalysisBlockoutWorker : public Nan::AsyncWorker {
 
     v8::Local<Value> argv[1] = { Nan::New<Integer>(rtn) };
 
-    callback->Call(1, argv);
+    callback->Call(1, argv, async_resource);
   }
  private:
   vorbis_dsp_state *vd;
@@ -255,7 +254,7 @@ NAN_METHOD(node_vorbis_bitrate_addblock) {
 class BitrateFlushpacketWorker : public Nan::AsyncWorker {
  public:
   BitrateFlushpacketWorker(vorbis_dsp_state *vd, ogg_packet *op, Nan::Callback *callback)
-    : vd(vd), op(op), rtn(0), Nan::AsyncWorker(callback) { }
+    : Nan::AsyncWorker(callback), vd(vd), op(op), rtn(0) { }
   ~BitrateFlushpacketWorker() { }
   void Execute () {
     rtn = vorbis_bitrate_flushpacket(vd, op);
@@ -265,7 +264,7 @@ class BitrateFlushpacketWorker : public Nan::AsyncWorker {
 
     v8::Local<Value> argv[1] = { Nan::New<Integer>(rtn) };
 
-    callback->Call(1, argv);
+    callback->Call(1, argv, async_resource);
   }
  private:
   vorbis_dsp_state *vd;
@@ -288,7 +287,7 @@ NAN_METHOD(node_vorbis_bitrate_flushpacket) {
 class SynthesisIdheaderWorker : public Nan::AsyncWorker {
  public:
   SynthesisIdheaderWorker(ogg_packet *op, Nan::Callback *callback)
-    : op(op), rtn(0), Nan::AsyncWorker(callback) { }
+    : Nan::AsyncWorker(callback), op(op), rtn(0) { }
   ~SynthesisIdheaderWorker() { }
   void Execute () {
     rtn = vorbis_synthesis_idheader(op);
@@ -298,7 +297,7 @@ class SynthesisIdheaderWorker : public Nan::AsyncWorker {
 
     v8::Local<Value> argv[] = { Nan::Null(), Nan::New<Boolean>(rtn) };
 
-    callback->Call(2, argv);
+    callback->Call(2, argv, async_resource);
   }
  private:
   ogg_packet *op;
@@ -319,7 +318,7 @@ NAN_METHOD(node_vorbis_synthesis_idheader) {
 class SynthesisHeaderinWorker : public Nan::AsyncWorker {
  public:
   SynthesisHeaderinWorker(vorbis_info *vi, vorbis_comment *vc, ogg_packet *op, Nan::Callback *callback)
-    : vi(vi), vc(vc), op(op), rtn(0), Nan::AsyncWorker(callback) { }
+    : Nan::AsyncWorker(callback), vi(vi), vc(vc), op(op), rtn(0) { }
   ~SynthesisHeaderinWorker() { }
   void Execute () {
       rtn = vorbis_synthesis_headerin(vi, vc, op);
@@ -329,7 +328,7 @@ class SynthesisHeaderinWorker : public Nan::AsyncWorker {
 
     v8::Local<Value> argv[1] = { Nan::New<Integer>(rtn) };
 
-    callback->Call(1, argv);
+    callback->Call(1, argv, async_resource);
   }
  private:
   vorbis_info *vi;
@@ -412,7 +411,7 @@ NAN_MODULE_INIT(Initialize) {
 
   /* sizeof's */
 #define SIZEOF(value) \
-  Nan::ForceSet(target, Nan::New<String>("sizeof_" #value).ToLocalChecked(), Nan::New<Integer>(static_cast<int32_t>(sizeof(value))), \
+  Nan::DefineOwnProperty(target, Nan::New<String>("sizeof_" #value).ToLocalChecked(), Nan::New<Integer>(static_cast<int32_t>(sizeof(value))), \
       static_cast<PropertyAttribute>(ReadOnly|DontDelete))
   SIZEOF(vorbis_info);
   SIZEOF(vorbis_comment);
@@ -422,7 +421,7 @@ NAN_MODULE_INIT(Initialize) {
 
   /* contants */
 #define CONST(value) \
-  Nan::ForceSet(target, Nan::New<String>(#value).ToLocalChecked(), Nan::New<Integer>(value), \
+  Nan::DefineOwnProperty(target, Nan::New<String>(#value).ToLocalChecked(), Nan::New<Integer>(value), \
       static_cast<PropertyAttribute>(ReadOnly|DontDelete))
   CONST(OV_FALSE);
   CONST(OV_EOF);
@@ -464,7 +463,7 @@ NAN_MODULE_INIT(Initialize) {
   Nan::SetMethod(target, "comment_array", node_comment_array);
   Nan::SetMethod(target, "get_format", node_get_format);
 
-  Nan::ForceSet(target, Nan::New<String>("version").ToLocalChecked(), Nan::New<String>(vorbis_version_string()).ToLocalChecked(),
+  Nan::DefineOwnProperty(target, Nan::New<String>("version").ToLocalChecked(), Nan::New<String>(vorbis_version_string()).ToLocalChecked(),
     static_cast<PropertyAttribute>(ReadOnly|DontDelete));
 }
 
