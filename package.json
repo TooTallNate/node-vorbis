@@ -19,13 +19,14 @@
   "main": "./index.js",
   "dependencies": {
     "bindings": "^1.2.0",
+    "buffer-alloc": "^1.1.0",
     "debug": "^2.2.0",
-    "nan": "^2.3.5",
+    "nan": "^2.10.0",
     "ogg": "^1.2.5",
-    "readable-stream": "1.0"
+    "readable-stream": "^2.3.6"
   },
   "devDependencies": {
-    "mocha": "*"
+    "mocha": "^2.5.3"
   },
   "scripts": {
     "test": "mocha --reporter spec"
